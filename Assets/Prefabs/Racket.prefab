@@ -11,9 +11,10 @@ GameObject:
   - component: {fileID: 8165981855911036504}
   - component: {fileID: 3233901905388211633}
   - component: {fileID: 6949828996701327724}
+  - component: {fileID: 3250164176747934509}
   m_Layer: 0
-  m_Name: Paddle
-  m_TagString: Untagged
+  m_Name: Racket
+  m_TagString: Racket
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -68,19 +69,33 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8165981855911036507}
-  m_BodyType: 1
+  m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDrag: 0
   m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_GravityScale: 0
   m_Material: {fileID: 0}
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
-  m_Constraints: 0
+  m_CollisionDetection: 1
+  m_Constraints: 5
+--- !u!114 &3250164176747934509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8165981855911036507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5811c2e4bc83ae7c9572173f55f70b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 500
+  axis: Vertical
 --- !u!1 &8165981856133713966
 GameObject:
   m_ObjectHideFlags: 0
@@ -92,7 +107,7 @@ GameObject:
   - component: {fileID: 8165981856133713967}
   - component: {fileID: 8165981856133713964}
   m_Layer: 0
-  m_Name: paddle
+  m_Name: racket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -172,7 +187,7 @@ GameObject:
   - component: {fileID: 8165981856237370055}
   - component: {fileID: 8165981856237370052}
   m_Layer: 0
-  m_Name: paddle_border
+  m_Name: racket_border
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
