@@ -127,15 +127,15 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 3250164176747934509, guid: a49a1491f5164840a892b2a40343423d,
-        type: 3}
-      propertyPath: axis
-      value: Vertical2
-      objectReference: {fileID: 0}
     - target: {fileID: 8165981855911036507, guid: a49a1491f5164840a892b2a40343423d,
         type: 3}
       propertyPath: m_Name
       value: Other Racket
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250164176747934509, guid: a49a1491f5164840a892b2a40343423d,
+        type: 3}
+      propertyPath: axis
+      value: Vertical2
       objectReference: {fileID: 0}
     - target: {fileID: 8165981855911036504, guid: a49a1491f5164840a892b2a40343423d,
         type: 3}
@@ -873,6 +873,16 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 853680217452584895, guid: a21f7882ade6217eca02f3463630ece5,
+        type: 3}
+      propertyPath: m_Name
+      value: Ball
+      objectReference: {fileID: 0}
+    - target: {fileID: 853680217452584895, guid: a21f7882ade6217eca02f3463630ece5,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4055282740598773418, guid: a21f7882ade6217eca02f3463630ece5,
         type: 3}
       propertyPath: paddleHeight
@@ -889,16 +899,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 6264955030507006859, guid: c49a8b51eddf23bdf93b6bdde962375f,
         type: 3}
-    - target: {fileID: 853680217452584895, guid: a21f7882ade6217eca02f3463630ece5,
-        type: 3}
-      propertyPath: m_Name
-      value: Ball
-      objectReference: {fileID: 0}
-    - target: {fileID: 853680217452584895, guid: a21f7882ade6217eca02f3463630ece5,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4604294052887652038, guid: a21f7882ade6217eca02f3463630ece5,
         type: 3}
       propertyPath: m_LocalPosition.x
