@@ -1,18 +1,13 @@
-﻿using UnityEngine;
+using UnityEngine;
+using Unity.Networking.Transport;
 
-public class Player : MonoBehaviour {
+public struct Player {
 
-  public float speed = 7;
-  public string axis = "Vertical";
+  public int id;
+  public NetworkConnection connection;
+  public Racket racket;
 
-  new Rigidbody2D rigidbody;
+  public void Destroy() {
 
-  void Start() {
-    rigidbody = GetComponent<Rigidbody2D>();
-  }
-
-  void FixedUpdate () {
-    float vel = Input.GetAxisRaw(axis) * speed * Time.fixedDeltaTime;
-    rigidbody.velocity = new Vector2(0, vel);
   }
 }

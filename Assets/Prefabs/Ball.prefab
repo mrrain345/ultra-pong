@@ -48,6 +48,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -134,3 +135,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   hitAcceleration: 0.1
+  explodeObj: {fileID: 6264955030507006859, guid: c49a8b51eddf23bdf93b6bdde962375f,
+    type: 3}

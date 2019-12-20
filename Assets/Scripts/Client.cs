@@ -6,51 +6,43 @@ public class Client : MonoBehaviour {
 
   public UdpNetworkDriver driver;
   public NetworkConnection connection;
+  public string ip = "127.0.0.1";
+  public ushort port = 9000;
 
-  int data = 1;
-  float time = 0;
+  public bool IsConnected { get; private set; }
 
   private void Start() {
     driver = new UdpNetworkDriver(new INetworkParameter[0]);
     connection = default(NetworkConnection);
 
-    NetworkEndPoint endpoint = NetworkEndPoint.LoopbackIpv4;
-    endpoint.Port = 9000;
+    NetworkEndPoint endpoint = NetworkEndPoint.Parse(ip, port);
     connection = driver.Connect(endpoint);
   }
 
-  void SendValue(int value) {
-    using (var writer = new DataStreamWriter(4, Allocator.Temp)) {
-      writer.Write(value);
-      connection.Send(driver, writer);
-    }
+  public void SendData(DataStreamWriter writer) {
+    if (!IsConnected) return;
+    connection.Send(driver, writer);
   }
 
 
   void OnConnected() {
     Debug.Log("We are now connected to the server");
-    SendValue(data);
   }
 
   void OnDataReceived(DataStreamReader stream) {
     var context = default(DataStreamReader.Context);
-    int value = stream.ReadInt(ref context);
-    Debug.LogFormat("Client received: {0}", value);
-    data = value;
-  }
+    PacketType type = (PacketType) stream.ReadInt(ref context);
+    Debug.LogFormat("[CLIENT]: {0}", type);
 
-  private void FixedUpdate() {
-    time += Time.fixedDeltaTime;
-
-    if (time >= 1f) {
-      time -= 1f;
-      SendValue(data);
+    if (type == PacketType.RacketMove) {
+      int id = stream.ReadInt(ref context);
+      float position = stream.ReadFloat(ref context);
     }
   }
 
 
 
-  public void OnDestroy() {
+  private void OnDestroy() {
     connection.Disconnect(driver);
     connection = default(NetworkConnection);
     driver.Dispose();
@@ -66,6 +58,7 @@ public class Client : MonoBehaviour {
       switch (cmd) {
         case NetworkEvent.Type.Connect:
           OnConnected();
+          IsConnected = true;
           break;
         case NetworkEvent.Type.Data:
           OnDataReceived(stream);
@@ -73,6 +66,7 @@ public class Client : MonoBehaviour {
         case NetworkEvent.Type.Disconnect:
           Debug.Log("Client got disconnected from server");
           connection = default(NetworkConnection);
+          IsConnected = false;
           break;
       }
     }

@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8165981855911036504}
   - component: {fileID: 3233901905388211633}
   - component: {fileID: 6949828996701327724}
-  - component: {fileID: 3250164176747934509}
+  - component: {fileID: 8462866865947906333}
   m_Layer: 0
   m_Name: Racket
   m_TagString: Racket
@@ -82,7 +82,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 5
---- !u!114 &3250164176747934509
+--- !u!114 &8462866865947906333
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -91,11 +91,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 8165981855911036507}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e5811c2e4bc83ae7c9572173f55f70b5, type: 3}
+  m_Script: {fileID: 11500000, guid: 2d91d8af5dce6560c80245f710e6a71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 500
-  axis: Vertical
+  client: {fileID: 0}
+  speed: 7
+  isLocalPlayer: 0
 --- !u!1 &8165981856133713966
 GameObject:
   m_ObjectHideFlags: 0
@@ -141,6 +142,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -221,6 +223,7 @@ SpriteRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
