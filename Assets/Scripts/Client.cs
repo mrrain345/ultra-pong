@@ -8,6 +8,7 @@ public class Client : MonoBehaviour {
   public NetworkConnection connection;
   public string ip = "127.0.0.1";
   public ushort port = 9000;
+  public Menu menu;
 
   public bool IsConnected { get; private set; }
 
@@ -26,7 +27,7 @@ public class Client : MonoBehaviour {
 
 
   void OnConnected() {
-    Debug.Log("We are now connected to the server");
+    Debug.Log("[CLIENT] CONNECTED");
   }
 
   void OnDataReceived(DataStreamReader stream) {
@@ -37,6 +38,10 @@ public class Client : MonoBehaviour {
     if (type == PacketType.RacketMove) {
       int id = stream.ReadInt(ref context);
       float position = stream.ReadFloat(ref context);
+    }
+
+    else if (type == PacketType.GameListACK) {
+      menu.UpdateGameList(stream, ref context);
     }
   }
 
@@ -64,7 +69,7 @@ public class Client : MonoBehaviour {
           OnDataReceived(stream);
           break;
         case NetworkEvent.Type.Disconnect:
-          Debug.Log("Client got disconnected from server");
+          Debug.Log("[CLIENT] DISCONNECTED");
           connection = default(NetworkConnection);
           IsConnected = false;
           break;
