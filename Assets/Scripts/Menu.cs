@@ -12,6 +12,8 @@ public class Menu : MonoBehaviour {
   [SerializeField] GameObject playersObj;
   [SerializeField] TextMeshProUGUI playersText;
   [SerializeField] Button button;
+  [SerializeField] RectTransform lobby;
+  [SerializeField] GameObject gameEntry;
 
   List<Game> gameLobby;
 
@@ -91,5 +93,26 @@ public class Menu : MonoBehaviour {
       gameLobby.Insert(i, new Game(id, owner, Encoding.UTF8.GetString(name), (Game.Mode)mode, playerCount));
       Debug.LogFormat("[MENU]  name: '{0}', id: {1}, owner: {2}, mode: {3}, players: {4}", Encoding.UTF8.GetString(name), id, owner, mode, players);
     }
+
+    foreach (RectTransform child in lobby) {
+      Destroy(child.gameObject);
+    }
+    lobby.sizeDelta = new Vector2(0, 60 * length);
+    
+    for (int i = 0; i < length; i++) {
+      GameObject entry = GameObject.Instantiate(gameEntry);
+      entry.GetComponent<MenuLobby>().Initialize(gameLobby[i], this);
+      entry.transform.SetParent(lobby);
+      RectTransform rect = entry.GetComponent<RectTransform>();
+      rect.anchorMin = new Vector2(0, 1);
+      rect.anchorMax = new Vector2(1, 1);
+      rect.pivot = new Vector2(0, 1);
+      rect.localPosition = new Vector3(0, -60 * i, 0);
+      rect.sizeDelta = new Vector2(0, 60);
+    }
+  }
+
+  public void SelectGame(Game game) {
+    Debug.LogFormat("[MENU] Game selected: '{0}'", game.name);
   }
 }
