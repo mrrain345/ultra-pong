@@ -25,23 +25,21 @@ public class Client : MonoBehaviour {
     connection.Send(driver, writer);
   }
 
-
   void OnConnected() {
     Debug.Log("[CLIENT] CONNECTED");
   }
+
 
   void OnDataReceived(DataStreamReader stream) {
     var context = default(DataStreamReader.Context);
     PacketType type = (PacketType) stream.ReadInt(ref context);
     Debug.LogFormat("[CLIENT]: {0}", type);
 
-    if (type == PacketType.RacketMove) {
-      int id = stream.ReadInt(ref context);
-      float position = stream.ReadFloat(ref context);
-    }
-
-    else if (type == PacketType.GameListACK) {
-      menu.UpdateGameList(stream, ref context);
+    switch(type) {
+      case PacketType.GameListACK:
+        var game = new NetPackets.GameListACK().Receive(ref stream, ref context);
+        menu.UpdateGameList(game);
+        break;
     }
   }
 

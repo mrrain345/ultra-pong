@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Game {
+public class GameLobby {
   public enum Mode : int {
     PlayerVsPlayer = 0,
     Octagon,
@@ -13,16 +13,16 @@ public class Game {
   public string name { get; private set; }
   public Mode mode { get; private set; }
   public int playerCount { get; private set; }
+  public int acceptedPlayers { get; private set; }
 
-  public List<Player> players;
+  public List<int> playerIDs;
 
-  public Game(int id, int owner, string name, Mode mode, int playerCount) {
+  public GameLobby(int id, int owner, string name, Mode mode, int playerCount, int acceptedPlayers) {
     this.id = id;
     this.owner = owner;
     this.name = name;
     this.mode = mode;
     this.playerCount = playerCount;
-
-    players = new List<Player>(playerCount);
+    this.acceptedPlayers = acceptedPlayers;
   }
 }

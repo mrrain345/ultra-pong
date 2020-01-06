@@ -8,14 +8,34 @@ using System.Text;
 
 public class Menu : MonoBehaviour {
 
+  [Header("General")]
   [SerializeField] Client client;
+  
+  [Header("Canvases")]
+  [SerializeField] GameObject mainCanvas;
+  [SerializeField] GameObject LobbyCanvas;
+
+  [Header("Left Panel")]
   [SerializeField] GameObject playersObj;
   [SerializeField] TextMeshProUGUI playersText;
   [SerializeField] Button button;
+
+  [Header("Right Panel")]
   [SerializeField] RectTransform lobby;
   [SerializeField] GameObject gameEntry;
 
-  List<Game> gameLobby;
+  [Header("Lobby Panel")]
+  [SerializeField] TextMeshProUGUI lobbyPlayers;
+
+  List<GameLobby> gameLobby;
+
+  public bool isLobby {
+    get { return LobbyCanvas.activeInHierarchy; }
+    set {
+      mainCanvas.SetActive(!value);
+      LobbyCanvas.SetActive(value);
+    }
+  }
 
   int mode = 0;
   int players = 3;
@@ -26,7 +46,7 @@ public class Menu : MonoBehaviour {
   private void Start() {
     playersObj.SetActive(false);
     button.interactable = false;
-    gameLobby = new List<Game>();
+    gameLobby = new List<GameLobby>();
   }
 
   private void FixedUpdate() {
@@ -54,52 +74,25 @@ public class Menu : MonoBehaviour {
   }
 
   public void OnStart() {
-    byte[] name = Encoding.UTF8.GetBytes(serverName);
     int players = (mode > 0) ? this.players : 2;
 
-    using (var writer = new DataStreamWriter(4*4 + name.Length, Allocator.Temp)) {
-      writer.Write((int) PacketType.GameCreate);
-      writer.Write(mode);
-      writer.Write(players);
-      writer.Write(name.Length);
-      writer.Write(name, name.Length);
-      client.SendData(writer);
-    }
+    new NetPackets.GameCreate((GameLobby.Mode)mode, players, serverName).Send(client.driver, client.connection);
   }
 
   public void RefreshGameList() {
-    using (var writer = new DataStreamWriter(4, Allocator.Temp)) {
-      writer.Write((int) PacketType.GameList);
-      client.SendData(writer);
-    }
+    new NetPackets.GameList().Send(client.driver, client.connection);
   }
 
-  public void UpdateGameList(DataStreamReader stream, ref DataStreamReader.Context context) {
-    // int length, [int id, int owner, int mode, int playerCount, int nameLength, byte[] name]
+  public void UpdateGameList(NetPackets.GameListACK gameListACK) {
+    List<GameLobby> gameLobby = gameListACK.gameLobby;
     
-    int length = stream.ReadInt(ref context);
-    gameLobby = new List<Game>(length);
-
-    Debug.LogFormat("[MENU] Lobby count: {0}", length);
-
-    for (int i = 0; i < length; i++) {
-      int id = stream.ReadInt(ref context);
-      int owner = stream.ReadInt(ref context);
-      int mode = stream.ReadInt(ref context);
-      int playerCount = stream.ReadInt(ref context);
-      int nameLength = stream.ReadInt(ref context);
-      byte[] name = stream.ReadBytesAsArray(ref context, nameLength);
-
-      gameLobby.Insert(i, new Game(id, owner, Encoding.UTF8.GetString(name), (Game.Mode)mode, playerCount));
-      Debug.LogFormat("[MENU]  name: '{0}', id: {1}, owner: {2}, mode: {3}, players: {4}", Encoding.UTF8.GetString(name), id, owner, mode, players);
-    }
-
     foreach (RectTransform child in lobby) {
       Destroy(child.gameObject);
     }
-    lobby.sizeDelta = new Vector2(0, 60 * length);
+
+    lobby.sizeDelta = new Vector2(0, 60 * gameLobby.Count);
     
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < gameLobby.Count; i++) {
       GameObject entry = GameObject.Instantiate(gameEntry);
       entry.GetComponent<MenuLobby>().Initialize(gameLobby[i], this);
       entry.transform.SetParent(lobby);
@@ -112,7 +105,14 @@ public class Menu : MonoBehaviour {
     }
   }
 
-  public void SelectGame(Game game) {
+  public void SelectGame(GameLobby game) {
     Debug.LogFormat("[MENU] Game selected: '{0}'", game.name);
+
+    isLobby = true;
+    lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
+  }
+
+  public void OnLobbyCancel() {
+    isLobby = false;
   }
 }

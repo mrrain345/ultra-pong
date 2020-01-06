@@ -6,15 +6,15 @@ public class MenuLobby : MonoBehaviour {
   [SerializeField] TextMeshProUGUI players;
   [SerializeField] TextMeshProUGUI mode;
 
-  Game game;
+  GameLobby game;
   Menu menu;
 
-  public void Initialize(Game game, Menu menu) {
+  public void Initialize(GameLobby game, Menu menu) {
     this.game = game;
     this.menu = menu;
 
     name.text = game.name;
-    players.text = game.playerCount.ToString();
+    players.text = game.acceptedPlayers + " / " + game.playerCount;
     mode.text = game.mode.ToString();
   }
 

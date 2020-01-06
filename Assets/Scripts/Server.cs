@@ -10,7 +10,7 @@ public class Server : MonoBehaviour {
   public ushort port = 9000;
 
   List<Player> players;
-  List<Game> gameLobby;
+  List<GameLobby> gameLobby;
 
   int gameID = 0;
 
@@ -25,8 +25,9 @@ public class Server : MonoBehaviour {
     }
 
     players = new List<Player>();
-    gameLobby = new List<Game>();
+    gameLobby = new List<GameLobby>();
   }
+
 
   void OnDataReceived(int id, ref DataStreamReader stream) {
     var context = default(DataStreamReader.Context);
@@ -35,65 +36,25 @@ public class Server : MonoBehaviour {
 
     switch (type) {
       case PacketType.GameCreate:
-        int mode = stream.ReadInt(ref context);
-        int players = stream.ReadInt(ref context);
-        int nameLength = stream.ReadInt(ref context);
-        byte[] name = stream.ReadBytesAsArray(ref context, nameLength);
-        GameCreate(id, mode, players, Encoding.UTF8.GetString(name));
+        var gameCreate = new NetPackets.GameCreate().Receive(ref stream, ref context);
+        GameCreate(id,gameCreate);
         break;
       
       case PacketType.GameList:
-        GameList(id);
-        break;
-
-      case PacketType.PlayerMove:
-        float position = stream.ReadFloat(ref context);
-        PlayerMove(id, position);
+        var gameListACK = new NetPackets.GameListACK() { gameLobby = gameLobby };
+        gameListACK.Send(driver, players[id].connection);
         break;
     }
   }
 
-  void GameCreate(int id, int mode, int players, string name) {
-    gameLobby.Add(new Game(gameID++, id, name, (Game.Mode)mode, (int)players));
-    Debug.LogFormat("[SERVER] GAME CREATED  name: '{0}', players: {1}, mode: {2}", name, players, mode);
-  }
 
-  void GameList(int id) {
-    // int length, [int id, int owner, int mode, int playerCount, int nameLength, byte[] name]
-    int packetLength = 4*2;
-    foreach (var game in gameLobby) {
-      packetLength += 4*5 + Encoding.UTF8.GetByteCount(game.name);
-    }
+  void GameCreate(int id, NetPackets.GameCreate gameCreate) {
+    GameLobby game = new GameLobby(gameID++, id, gameCreate.name, gameCreate.mode, gameCreate.players, 1);
+    gameLobby.Add(game);
+    game.playerIDs = new List<int>();
+    game.playerIDs.Add(id);
 
-    using (var writer = new DataStreamWriter(packetLength, Allocator.Temp)) {
-      writer.Write((int) PacketType.GameListACK);
-      writer.Write(gameLobby.Count);
-
-      foreach (var game in gameLobby) {
-        writer.Write(game.id);
-        writer.Write(game.owner);
-        writer.Write((int)game.mode);
-        writer.Write(game.playerCount);
-        byte[] name = Encoding.UTF8.GetBytes(game.name);
-        writer.Write(name.Length);
-        writer.Write(name);
-      }
-
-      players[id].connection.Send(driver, writer);
-    }
-  }
-
-  void PlayerMove(int id, float position) {
-    using (var writer = new DataStreamWriter(3*4, Allocator.Temp)) {
-      writer.Write((int) PacketType.RacketMove);
-      writer.Write(id);
-      writer.Write(position);
-
-      foreach (var player in players) {
-        //if (player.id == id) continue;
-        player.connection.Send(driver, writer);
-      }
-    }
+    Debug.LogFormat("[SERVER] GAME CREATED  name: '{0}', players: {1}, mode: {2}", gameCreate.name, gameCreate.players, gameCreate.mode);
   }
 
   private void OnDestroy() {
