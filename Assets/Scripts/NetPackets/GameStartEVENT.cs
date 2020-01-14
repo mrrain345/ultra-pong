@@ -3,43 +3,47 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Networking.Transport;
 
-// int id, int owner, int mode, int nameLength, byte[] name, int playerCount, [int id]
+// int id, int playerID, int owner, int mode, int nameLength, byte[] name, int playerCount, [int id]
 namespace NetPackets {
   public struct GameStartEVENT : INetPacket<GameStartEVENT> {
     public PacketType type => PacketType.GameStartEVENT;
 
     public int id;
+    public int playerID;
     public int owner;
-    public GameLobby.Mode mode;
+    public GameInfo.Mode mode;
     public string name;
     public int[] playerIDs;
 
-    public GameStartEVENT(int id, int owner, GameLobby.Mode mode, string name, int[] playerIDs) {
+    public GameStartEVENT(int id, int playerID, int owner, GameInfo.Mode mode, string name, int[] playerIDs) {
       this.id = id;
+      this.playerID = playerID;
       this.owner = owner;
       this.mode = mode;
       this.name = name;
       this.playerIDs = playerIDs;
     }
 
-    public GameStartEVENT(GameLobby game) {
+    public GameStartEVENT(GameInfo game, int playerID) {
       this.id = game.id;
+      this.playerID = playerID;
       this.owner = game.owner;
       this.mode = game.mode;
       this.name = game.name;
       this.playerIDs = game.playerIDs.ToArray();
     }
 
-    public GameLobby GetGameLobby() {
-      GameLobby game = new GameLobby(id, owner, name, mode, playerIDs.Length, playerIDs.Length);
+    public GameInfo GetGame() {
+      GameInfo game = new GameInfo(id, owner, name, mode, playerIDs.Length, playerIDs.Length);
       game.playerIDs = new List<int>(playerIDs);
       return game;
     }
 
     public GameStartEVENT Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
       this.id = stream.ReadInt(ref context);
+      this.playerID = stream.ReadInt(ref context);
       this.owner = stream.ReadInt(ref context);
-      this.mode = (GameLobby.Mode) stream.ReadInt(ref context);
+      this.mode = (GameInfo.Mode) stream.ReadInt(ref context);
       
       int nameLength = stream.ReadInt(ref context);
       byte[] name = stream.ReadBytesAsArray(ref context, nameLength);
@@ -55,10 +59,11 @@ namespace NetPackets {
     public void Send(UdpNetworkDriver driver, NetworkConnection connection) {
       byte[] name = Encoding.UTF8.GetBytes(this.name);
 
-      using (var writer = new DataStreamWriter(4*6 + name.Length + playerIDs.Length*4, Allocator.Temp)) {
+      using (var writer = new DataStreamWriter(4*7 + name.Length + playerIDs.Length*4, Allocator.Temp)) {
         writer.Write((int) this.type);
 
         writer.Write(id);
+        writer.Write(playerID);
         writer.Write(owner);
         writer.Write((int) mode);
         writer.Write(name.Length);

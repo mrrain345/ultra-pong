@@ -9,6 +9,7 @@ using System.Text;
 public class Menu : MonoBehaviour {
 
   [Header("General")]
+  [SerializeField] bool DEBUG = false;
   [SerializeField] Client client;
   
   [Header("Canvases")]
@@ -17,6 +18,7 @@ public class Menu : MonoBehaviour {
 
   [Header("Left Panel")]
   [SerializeField] GameObject playersObj;
+  [SerializeField] TMP_InputField serverText;
   [SerializeField] TextMeshProUGUI playersText;
   [SerializeField] Button button;
 
@@ -27,7 +29,7 @@ public class Menu : MonoBehaviour {
   [Header("Lobby Panel")]
   [SerializeField] TextMeshProUGUI lobbyPlayers;
 
-  List<GameLobby> gameLobby;
+  List<GameInfo> gameLobby;
 
   public bool isLobby {
     get { return LobbyCanvas.activeInHierarchy; }
@@ -41,20 +43,24 @@ public class Menu : MonoBehaviour {
   int players = 3;
   string serverName = "";
 
-  float time = 4f;
+  float time = 0f;
   bool isYourGame = false;
-  GameLobby selectedGame = null;
+  GameInfo selectedGame = null;
+
+  bool gameListRefreshed = false;
 
   private void Start() {
     playersObj.SetActive(false);
     button.interactable = false;
-    gameLobby = new List<GameLobby>();
+    gameLobby = new List<GameInfo>();
   }
 
   private void FixedUpdate() {
+    if (gameListRefreshed) return;
+
     time += Time.fixedDeltaTime;
-    if (time > 5f) {
-      time = 0f;
+    if (time > 0.5f) {
+      gameListRefreshed = true;
       RefreshGameList();
     }
   }
@@ -77,15 +83,16 @@ public class Menu : MonoBehaviour {
 
   public void OnStart() {
     int players = (mode > 0) ? this.players : 2;
-
-    new NetPackets.GameCreate((GameLobby.Mode)mode, players, serverName).Send(client.driver, client.connection);
+    new NetPackets.GameCreate((GameInfo.Mode)mode, players, serverName).Send(client.driver, client.connection);
+    OnServerName("");
+    serverText.text = "";
   }
 
   public void RefreshGameList() {
     new NetPackets.GameList().Send(client.driver, client.connection);
   }
 
-  public void SelectGame(GameLobby game) {
+  public void SelectGame(GameInfo game) {
     Debug.LogFormat("[MENU] Game selected: '{0}'", game.name);
 
     selectedGame = game;
@@ -93,10 +100,12 @@ public class Menu : MonoBehaviour {
     isLobby = true;
     lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
     new NetPackets.GameJoin(game.id).Send(client.driver, client.connection);
+    OnServerName("");
+    serverText.text = "";
   }
 
   public void OnLobbyCancel() {
-    new NetPackets.GameCancel(selectedGame.id).Send(client.driver, client.connection);
+    if (!DEBUG) new NetPackets.GameCancel(selectedGame.id).Send(client.driver, client.connection);
     isLobby = false;
     isYourGame = false;
     selectedGame = null;
@@ -105,7 +114,7 @@ public class Menu : MonoBehaviour {
 
 
   public void GameListACK(NetPackets.GameListACK gameListACK) {
-    List<GameLobby> gameLobby = gameListACK.gameLobby;
+    List<GameInfo> gameLobby = gameListACK.gameLobby;
     
     foreach (RectTransform child in lobby) {
       Destroy(child.gameObject);
@@ -127,7 +136,7 @@ public class Menu : MonoBehaviour {
   }
 
   public void GameCreateACK(NetPackets.GameCreateACK gameCreateACK) {
-    GameLobby game = gameCreateACK.GetGameLobby();
+    GameInfo game = gameCreateACK.GetGame();
     selectedGame = game;
     isYourGame = true;
     isLobby = true;
@@ -148,6 +157,6 @@ public class Menu : MonoBehaviour {
 
   public void GameStartEVENT(NetPackets.GameStartEVENT game) {
     Debug.Log("[CLIENT] GAME START!!");
-    // TODO
+    client.StartGame(game.GetGame(), game.playerID);
   }
 }

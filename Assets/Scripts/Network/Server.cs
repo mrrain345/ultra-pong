@@ -10,10 +10,11 @@ public class Server : MonoBehaviour {
   public ushort port = 9000;
 
   List<Player> players;
-  List<GameLobby> gameLobby;
-  List<GameLobby> activeGames;
+  List<GameInfo> gameLobby;
+  List<GameInfo> activeGames;
 
   int gameID = 0;
+  int playerID = 0;
 
   private void Start() {
     driver = new UdpNetworkDriver(new INetworkParameter[0]);
@@ -26,18 +27,18 @@ public class Server : MonoBehaviour {
     }
 
     players = new List<Player>();
-    gameLobby = new List<GameLobby>();
-    activeGames = new List<GameLobby>();
+    gameLobby = new List<GameInfo>();
+    activeGames = new List<GameInfo>();
   }
-
 
   void OnDataReceived(int id, ref DataStreamReader stream) {
     var context = default(DataStreamReader.Context);
     PacketType type = (PacketType) stream.ReadInt(ref context);
-    Debug.LogFormat("[SERVER] ({0}): {1}", id, type.ToString());
+    //Debug.LogFormat("[SERVER] ({0}): {1}", id, type.ToString());
     int gameID;
 
     switch (type) {
+      // MENU
       case PacketType.GameCreate:
         var gameCreate = new NetPackets.GameCreate().Receive(ref stream, ref context);
         GameCreate(id, gameCreate);
@@ -56,6 +57,22 @@ public class Server : MonoBehaviour {
         gameID = new NetPackets.GameCancel().Receive(ref stream, ref context).id;
         GameCancel(id, gameID);
         break;
+      
+      // GAME
+      case PacketType.RacketMove:
+        float RacketPos = new NetPackets.RacketMove().Receive(ref stream, ref context).position;
+        RacketMove(id, RacketPos);
+        break;
+
+      case PacketType.BallMove:
+        var ballMove = new NetPackets.BallMove().Receive(ref stream, ref context);
+        BallMove(id, ballMove);
+        break;
+      
+      case PacketType.PlayerFail:
+        int playerID = new NetPackets.PlayerFail().Receive(ref stream, ref context).id;
+        PlayerFail(id, playerID);
+        break;
     }
   }
 
@@ -69,7 +86,7 @@ public class Server : MonoBehaviour {
 
 
   void GameCreate(int id, NetPackets.GameCreate gameCreate) {
-    GameLobby game = new GameLobby(gameID++, players[id].id, gameCreate.name, gameCreate.mode, gameCreate.players, 0);
+    GameInfo game = new GameInfo(gameID++, players[id].id, gameCreate.name, gameCreate.mode, gameCreate.players, 0);
     game.AddPlayer(id);
     gameLobby.Add(game);
 
@@ -79,7 +96,7 @@ public class Server : MonoBehaviour {
   }
 
   void GameJoin(int id, int gameID) {
-    GameLobby game = gameLobby.Find(g => g.id == gameID);
+    GameInfo game = gameLobby.Find(g => g.id == gameID);
     if (game == null || game.acceptedPlayers >= game.playerCount) {
       new NetPackets.GameJoinACK(false);
     } else {
@@ -98,7 +115,7 @@ public class Server : MonoBehaviour {
   }
 
   void GameCancel(int id, int gameID) {
-    GameLobby game = gameLobby.Find(g => g.id == gameID);
+    GameInfo game = gameLobby.Find(g => g.id == gameID);
     if (game == null) return;
     if (game.owner == id) {
       var destroyEvent = new NetPackets.GameDestroyEVENT(gameID);
@@ -120,13 +137,47 @@ public class Server : MonoBehaviour {
     LobbyChangedEvent();
   }
 
-  void GameStart(GameLobby game) {
+  void GameStart(GameInfo game) {
     gameLobby.Remove(game);
     activeGames.Add(game);
 
-    var startEvent = new NetPackets.GameStartEVENT(game);
+    foreach (int id in game.playerIDs) {
+      players[id].SetLobby(false);
+      new NetPackets.GameStartEVENT(game, id).Send(driver, players[id].connection);
+    }
+  }
+
+  void RacketMove(int id, float position) {
+    GameInfo game = activeGames.Find(g => g.ContainsPlayer(id));
+    if (game == null) return;
+
+    var racketMoveEvent = new NetPackets.RacketMoveEVENT(id, position);
     foreach (int playerID in game.playerIDs) {
-      startEvent.Send(driver, players[playerID].connection);
+      if (playerID == id) continue;
+      racketMoveEvent.Send(driver, players[playerID].connection);
+    }
+  }
+
+  void BallMove(int id, NetPackets.BallMove ballMove) {
+    GameInfo game = activeGames.Find(g => g.ContainsPlayer(id));
+    if (game == null) return;
+    if (game.owner != id) return;
+
+    var ballMoveEvent = new NetPackets.BallMoveEVENT(ballMove.position, ballMove.velocity);
+    foreach (int playerID in game.playerIDs) {
+      if (playerID == id) continue;
+      ballMoveEvent.Send(driver, players[playerID].connection);
+    }
+  }
+
+  void PlayerFail(int id, int playerID) {
+    GameInfo game = activeGames.Find(g => g.ContainsPlayer(id));
+    if (game == null) return;
+    if (game.owner != id) return;
+
+    var playerFailEvent = new NetPackets.PlayerFailEVENT(playerID);
+    foreach (int player in game.playerIDs) {
+      playerFailEvent.Send(driver, players[player].connection);
     }
   }
 
@@ -151,16 +202,14 @@ public class Server : MonoBehaviour {
     NetworkConnection conn;
 
     while ((conn = driver.Accept()) != default(NetworkConnection)) {
-      int id = players.Count;
       Player player = new Player {
-        id = id,
+        id = playerID,
         lobby = true,
-        connection = conn,
-        racket = null,
+        connection = conn
       };
 
-      players.Add(player);
-      Debug.LogFormat("[SERVER] NEW CONNECTION id: {0}", id);
+      players.Insert(playerID++, player);
+      Debug.LogFormat("[SERVER] NEW CONNECTION id: {0}", player.id);
     }
 
     DataStreamReader stream;

@@ -8,11 +8,11 @@ namespace NetPackets {
 
     public int id;
     public int owner;
-    public GameLobby.Mode mode;
+    public GameInfo.Mode mode;
     public int players;
     public string name;
 
-    public GameCreateACK(int id, int owner, GameLobby.Mode mode, int players, string name) {
+    public GameCreateACK(int id, int owner, GameInfo.Mode mode, int players, string name) {
       this.id = id;
       this.owner = owner;
       this.mode = mode;
@@ -20,7 +20,7 @@ namespace NetPackets {
       this.name = name;
     }
 
-    public GameCreateACK(GameLobby game) {
+    public GameCreateACK(GameInfo game) {
       this.id = game.id;
       this.owner = game.owner;
       this.mode = game.mode;
@@ -28,14 +28,14 @@ namespace NetPackets {
       this.name = game.name;
     }
 
-    public GameLobby GetGameLobby() {
-      return new GameLobby(id, owner, name, mode, players, 1);
+    public GameInfo GetGame() {
+      return new GameInfo(id, owner, name, mode, players, 1);
     }
 
     public GameCreateACK Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
       this.id = stream.ReadInt(ref context);
       this.owner = stream.ReadInt(ref context);
-      this.mode = (GameLobby.Mode) stream.ReadInt(ref context);
+      this.mode = (GameInfo.Mode) stream.ReadInt(ref context);
       this.players = stream.ReadInt(ref context);
       int nameLength = stream.ReadInt(ref context);
       byte[] name = stream.ReadBytesAsArray(ref context, nameLength);

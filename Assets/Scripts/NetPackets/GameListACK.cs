@@ -9,15 +9,15 @@ namespace NetPackets {
   public struct GameListACK : INetPacket<GameListACK> {
     public PacketType type => PacketType.GameListACK;
 
-    public List<GameLobby> gameLobby;
+    public List<GameInfo> gameLobby;
 
-    public GameListACK(List<GameLobby> gameLobby) {
+    public GameListACK(List<GameInfo> gameLobby) {
       this.gameLobby = gameLobby;
     }
 
     public GameListACK Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
       int length = stream.ReadInt(ref context);
-      gameLobby = new List<GameLobby>(length);
+      gameLobby = new List<GameInfo>(length);
       Debug.LogFormat("[CLIENT] GameListACK games: {0}", length);
 
       for (int i = 0; i < length; i++) {
@@ -29,7 +29,7 @@ namespace NetPackets {
         int nameLength = stream.ReadInt(ref context);
         byte[] name = stream.ReadBytesAsArray(ref context, nameLength);
 
-        gameLobby.Insert(i, new GameLobby(id, owner, Encoding.UTF8.GetString(name), (GameLobby.Mode)mode, playerCount, acceptedPlayers));
+        gameLobby.Insert(i, new GameInfo(id, owner, Encoding.UTF8.GetString(name), (GameInfo.Mode)mode, playerCount, acceptedPlayers));
       }
 
       return this;

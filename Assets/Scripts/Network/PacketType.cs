@@ -9,11 +9,15 @@ public enum PacketType : int {
   GameCancelACK,    // int id
   GameCancelEVENT,  // int id, int playerCount, int acceptedPlayers
   GameDestroyEVENT, // int id
-  GameStartEVENT,   // int id, int owner, int mode, int nameLength, byte[] name, int playerCount, [int id]
+  GameStartEVENT,   // int id, playerID, int owner, int mode, int nameLength, byte[] name, int playerCount, [int id]
   LobbyChangedEVENT,//
   GameList,         //
   GameListACK,      // int length, [int id, int owner, int mode, int playerCount, int acceptedPlayers, int nameLength, byte[] name]
   GameFinish,
-  PlayerMove,     
-  RacketMove      
+  RacketMove,       // float position
+  RacketMoveEVENT,  // int playerID, float position
+  BallMove,         // float position.x, float position.y, float velocity.x, float velocity.y
+  BallMoveEVENT,    // float position.x, float position.y, float velocity.x, float velocity.y
+  PlayerFail,       // int id
+  PlayerFailEVENT   // int id
 }

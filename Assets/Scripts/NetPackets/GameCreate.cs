@@ -6,18 +6,18 @@ namespace NetPackets {
   public struct GameCreate : INetPacket<GameCreate> {
     public PacketType type => PacketType.GameCreate;
 
-    public GameLobby.Mode mode;
+    public GameInfo.Mode mode;
     public int players;
     public string name;
 
-    public GameCreate(GameLobby.Mode mode, int players, string name) {
+    public GameCreate(GameInfo.Mode mode, int players, string name) {
       this.mode = mode;
       this.players = players;
       this.name = name;
     }
 
     public GameCreate Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
-      this.mode = (GameLobby.Mode) stream.ReadInt(ref context);
+      this.mode = (GameInfo.Mode) stream.ReadInt(ref context);
       this.players = stream.ReadInt(ref context);
       int nameLength = stream.ReadInt(ref context);
       byte[] name = stream.ReadBytesAsArray(ref context, nameLength);

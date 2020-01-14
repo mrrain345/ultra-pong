@@ -94,9 +94,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d91d8af5dce6560c80245f710e6a71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  client: {fileID: 0}
+  racketID: 0
   speed: 7
+  playerColor: {r: 0, g: 1, b: 1, a: 1}
+  gameController: {fileID: 0}
+  border: {fileID: 8165981856237370052}
   isLocalPlayer: 0
+  playerID: 0
 --- !u!1 &8165981856133713966
 GameObject:
   m_ObjectHideFlags: 0
@@ -249,7 +253,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 86e4bb8a5e6f9ef25a5b2797ca778c16, type: 3}
-  m_Color: {r: 0, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0

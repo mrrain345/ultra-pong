@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameLobby {
+public class GameInfo {
   public enum Mode : int {
     PlayerVsPlayer = 0,
     Octagon,
@@ -17,7 +17,7 @@ public class GameLobby {
 
   public List<int> playerIDs;
 
-  public GameLobby(int id, int owner, string name, Mode mode, int playerCount, int acceptedPlayers) {
+  public GameInfo(int id, int owner, string name, Mode mode, int playerCount, int acceptedPlayers) {
     this.id = id;
     this.owner = owner;
     this.name = name;
@@ -35,5 +35,9 @@ public class GameLobby {
   public void RemovePlayer(int id) {
     if (playerIDs == null) return;
     if (playerIDs.Remove(id)) acceptedPlayers--;
+  }
+
+  public bool ContainsPlayer(int id) {
+    return playerIDs.Contains(id);
   }
 }

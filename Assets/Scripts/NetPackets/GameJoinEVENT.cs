@@ -18,7 +18,7 @@ namespace NetPackets {
       this.acceptedPlayers = acceptedPlayers;
     }
 
-    public GameJoinEVENT(GameLobby game) {
+    public GameJoinEVENT(GameInfo game) {
       this.id = game.id;
       this.playerCount = game.playerCount;
       this.acceptedPlayers = game.acceptedPlayers;

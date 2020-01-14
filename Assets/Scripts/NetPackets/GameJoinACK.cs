@@ -20,7 +20,7 @@ namespace NetPackets {
       this.acceptedPlayers = acceptedPlayers;
     }
 
-    public GameJoinACK(GameLobby game) {
+    public GameJoinACK(GameInfo game) {
       this.success = true;
       this.id = game.id;
       this.playerCount = game.playerCount;

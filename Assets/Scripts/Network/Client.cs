@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Unity.Collections;
 using Unity.Networking.Transport;
 
@@ -8,25 +9,61 @@ public class Client : MonoBehaviour {
   public NetworkConnection connection;
   public string ip = "127.0.0.1";
   public ushort port = 9000;
-  public Menu menu;
+  
+  Menu menu;
+  GameController gameController;
 
   public bool IsConnected { get; private set; }
+  public GameInfo activeGame { get; private set; }
+  public int playerID { get; private set; }
+  public bool isGame => gameController != null;
 
   private void Start() {
+    Connect();
+  }
+
+  void Connect() {
+    if (SceneManager.GetActiveScene().buildIndex != 0) SceneManager.LoadScene(0);
     driver = new UdpNetworkDriver(new INetworkParameter[0]);
     connection = default(NetworkConnection);
 
     NetworkEndPoint endpoint = NetworkEndPoint.Parse(ip, port);
     connection = driver.Connect(endpoint);
-  }
 
-  public void SendData(DataStreamWriter writer) {
-    if (!IsConnected) return;
-    connection.Send(driver, writer);
+    menu = FindObjectOfType<Menu>();
+    DontDestroyOnLoad(gameObject);
   }
 
   void OnConnected() {
     Debug.Log("[CLIENT] CONNECTED");
+    menu.RefreshGameList();
+  }
+
+  public void SetGameController(GameController gameController) {
+    this.gameController = gameController;
+  } 
+
+  public void StartGame(GameInfo game, int playerID) {
+    menu = null;
+    activeGame = game;
+    this.playerID = playerID;
+    
+    switch (game.mode) {
+      case GameInfo.Mode.PlayerVsPlayer:
+        SceneManager.LoadScene(1);
+        break;
+      default:
+        StopGame();
+        break;
+    }
+  }
+
+  public void StopGame() {
+    activeGame = null;
+    gameController = null;
+    SceneManager.LoadScene(0);
+    menu = FindObjectOfType<Menu>();
+    menu.RefreshGameList();
   }
 
 
@@ -36,6 +73,7 @@ public class Client : MonoBehaviour {
     Debug.LogFormat("[CLIENT]: {0}", type);
 
     switch(type) {
+      // MENU
       case PacketType.LobbyChangedEVENT:
         if (menu == null) break;
         new NetPackets.GameList().Send(driver, connection);
@@ -76,6 +114,25 @@ public class Client : MonoBehaviour {
         var gameStartEvent = new NetPackets.GameStartEVENT().Receive(ref stream, ref context);
         menu.GameStartEVENT(gameStartEvent);
         break;
+
+      // GAME
+      case PacketType.RacketMoveEVENT:
+        if (!isGame) break;
+        var racketMoveEvent = new NetPackets.RacketMoveEVENT().Receive(ref stream, ref context);
+        gameController.OnRacketMove(racketMoveEvent.playerID, racketMoveEvent.position);
+        break;
+
+      case PacketType.BallMoveEVENT:
+        if (!isGame) break;
+        var ballMoveEvent = new NetPackets.BallMoveEVENT().Receive(ref stream, ref context);
+        gameController.OnBallMove(ballMoveEvent.position, ballMoveEvent.velocity);
+        break;
+
+      case PacketType.PlayerFailEVENT:
+        if (!isGame) break;
+        var playerFailEvent = new NetPackets.PlayerFailEVENT().Receive(ref stream, ref context);
+        gameController.OnPlayerFail(playerFailEvent.id);
+        break;
     }
   }
 
@@ -106,6 +163,7 @@ public class Client : MonoBehaviour {
           Debug.Log("[CLIENT] DISCONNECTED");
           connection = default(NetworkConnection);
           IsConnected = false;
+          Connect();
           break;
       }
     }
