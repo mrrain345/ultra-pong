@@ -42,6 +42,8 @@ public class Menu : MonoBehaviour {
   string serverName = "";
 
   float time = 4f;
+  bool isYourGame = false;
+  GameLobby selectedGame = null;
 
   private void Start() {
     playersObj.SetActive(false);
@@ -83,7 +85,26 @@ public class Menu : MonoBehaviour {
     new NetPackets.GameList().Send(client.driver, client.connection);
   }
 
-  public void UpdateGameList(NetPackets.GameListACK gameListACK) {
+  public void SelectGame(GameLobby game) {
+    Debug.LogFormat("[MENU] Game selected: '{0}'", game.name);
+
+    selectedGame = game;
+    isYourGame = false;
+    isLobby = true;
+    lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
+    new NetPackets.GameJoin(game.id).Send(client.driver, client.connection);
+  }
+
+  public void OnLobbyCancel() {
+    new NetPackets.GameCancel(selectedGame.id).Send(client.driver, client.connection);
+    isLobby = false;
+    isYourGame = false;
+    selectedGame = null;
+  }
+
+
+
+  public void GameListACK(NetPackets.GameListACK gameListACK) {
     List<GameLobby> gameLobby = gameListACK.gameLobby;
     
     foreach (RectTransform child in lobby) {
@@ -105,14 +126,28 @@ public class Menu : MonoBehaviour {
     }
   }
 
-  public void SelectGame(GameLobby game) {
-    Debug.LogFormat("[MENU] Game selected: '{0}'", game.name);
-
+  public void GameCreateACK(NetPackets.GameCreateACK gameCreateACK) {
+    GameLobby game = gameCreateACK.GetGameLobby();
+    selectedGame = game;
+    isYourGame = true;
     isLobby = true;
     lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
   }
 
-  public void OnLobbyCancel() {
-    isLobby = false;
+  public void GameJoinACK(NetPackets.GameJoinACK game) {
+    lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
+  }
+
+  public void GameJoinEVENT(NetPackets.GameJoinEVENT game) {
+    lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
+  }
+
+  public void GameCancelEVENT(NetPackets.GameCancelEVENT game) {
+    lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
+  }
+
+  public void GameStartEVENT(NetPackets.GameStartEVENT game) {
+    Debug.Log("[CLIENT] GAME START!!");
+    // TODO
   }
 }

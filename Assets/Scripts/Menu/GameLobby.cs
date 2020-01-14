@@ -25,4 +25,15 @@ public class GameLobby {
     this.playerCount = playerCount;
     this.acceptedPlayers = acceptedPlayers;
   }
+
+  public void AddPlayer(int id) {
+    if (playerIDs == null) playerIDs = new List<int>(playerCount);
+    playerIDs.Add(id);
+    acceptedPlayers++;
+  }
+
+  public void RemovePlayer(int id) {
+    if (playerIDs == null) return;
+    if (playerIDs.Remove(id)) acceptedPlayers--;
+  }
 }

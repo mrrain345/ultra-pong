@@ -1,5 +1,6 @@
 using System.Text;
 using System.Collections.Generic;
+using UnityEngine;
 using Unity.Collections;
 using Unity.Networking.Transport;
 
@@ -17,6 +18,7 @@ namespace NetPackets {
     public GameListACK Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
       int length = stream.ReadInt(ref context);
       gameLobby = new List<GameLobby>(length);
+      Debug.LogFormat("[CLIENT] GameListACK games: {0}", length);
 
       for (int i = 0; i < length; i++) {
         int id = stream.ReadInt(ref context);
@@ -34,13 +36,14 @@ namespace NetPackets {
     }
 
     public void Send(UdpNetworkDriver driver, NetworkConnection connection) {
+      Debug.LogFormat("[SERVER] GameListACK games: {0}", gameLobby.Count);
       int packetLength = 4*2;
       foreach (var game in gameLobby) {
         packetLength += 4*6 + Encoding.UTF8.GetByteCount(game.name);
       }
 
       using (var writer = new DataStreamWriter(packetLength, Allocator.Temp)) {
-        writer.Write((int) PacketType.GameListACK);
+        writer.Write((int) this.type);
         writer.Write(gameLobby.Count);
 
         foreach (var game in gameLobby) {

@@ -36,9 +36,45 @@ public class Client : MonoBehaviour {
     Debug.LogFormat("[CLIENT]: {0}", type);
 
     switch(type) {
+      case PacketType.LobbyChangedEVENT:
+        if (menu == null) break;
+        new NetPackets.GameList().Send(driver, connection);
+        break;
+
       case PacketType.GameListACK:
-        var game = new NetPackets.GameListACK().Receive(ref stream, ref context);
-        menu.UpdateGameList(game);
+        if (menu == null) break;
+        var gameList = new NetPackets.GameListACK().Receive(ref stream, ref context);
+        menu.GameListACK(gameList);
+        break;
+
+      case PacketType.GameCreateACK:
+        if (menu == null) break;
+        var gameCreate = new NetPackets.GameCreateACK().Receive(ref stream, ref context);
+        menu.GameCreateACK(gameCreate);
+        break;
+      
+      case PacketType.GameJoinACK:
+        if (menu == null) break;
+        var gameJoin = new NetPackets.GameJoinACK().Receive(ref stream, ref context);
+        menu.GameJoinACK(gameJoin);
+        break;
+      
+      case PacketType.GameJoinEVENT:
+        if (menu == null) break;
+        var gameJoinEvent = new NetPackets.GameJoinEVENT().Receive(ref stream, ref context);
+        menu.GameJoinEVENT(gameJoinEvent);
+        break;
+      
+      case PacketType.GameCancelEVENT:
+        if (menu == null) break;
+        var gameCancelEvent = new NetPackets.GameCancelEVENT().Receive(ref stream, ref context);
+        menu.GameCancelEVENT(gameCancelEvent);
+        break;
+      
+      case PacketType.GameStartEVENT:
+        if (menu == null) break;
+        var gameStartEvent = new NetPackets.GameStartEVENT().Receive(ref stream, ref context);
+        menu.GameStartEVENT(gameStartEvent);
         break;
     }
   }
