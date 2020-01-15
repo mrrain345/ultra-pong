@@ -9,6 +9,7 @@ public enum PacketType : int {
   GameCancelACK,    // int id
   GameCancelEVENT,  // int id, int playerCount, int acceptedPlayers
   GameDestroyEVENT, // int id
+  LobbyDestroyEVENT,// int id
   GameStartEVENT,   // int id, playerID, int owner, int mode, int nameLength, byte[] name, int playerCount, [int id]
   LobbyChangedEVENT,//
   GameList,         //

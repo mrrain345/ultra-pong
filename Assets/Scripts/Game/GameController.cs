@@ -7,9 +7,13 @@ public class GameController : MonoBehaviour {
   
   public bool isOwner => playerID == game.owner;
 
+  [SerializeField] new CameraController camera;
+
   Client client;
   GameInfo game => client.activeGame;
   int playerID => client.playerID;
+  PlayerInfo localPlayer => players[playerID];
+
   Dictionary<int, PlayerInfo> players;
 
   private void Start() {
@@ -26,11 +30,14 @@ public class GameController : MonoBehaviour {
     int i = 0;
     foreach (int playerID in game.playerIDs) {
       rackets[i].playerID = playerID;
-      if (playerID == this.playerID) rackets[i].isLocalPlayer = true;
+      if (playerID == this.playerID) {
+        rackets[i].isLocalPlayer = true;
+      }
       players[playerID] = new PlayerInfo(playerID, rackets[i++]);
     }
 
     client.SetGameController(this);
+    camera.Setup(game, localPlayer.racket.racketID);
   }
 
   public void OnRacketMove(int playerID, float position) {
@@ -53,6 +60,17 @@ public class GameController : MonoBehaviour {
     new NetPackets.RacketMove(position).Send(client.driver, client.connection);
   }
 
+  public void OnGameDestroy() {
+    destroyGame = true;
+    //client.StopGame();
+    #if UNITY_EDITOR
+      Destroy(client);
+    #else
+      Destroy(client.gameObject);
+    #endif
+    SceneManager.LoadScene(0);
+  }
+
 
   // Owner only
   public void BallMove(Vector2 position, Vector2 velocity) {
@@ -71,15 +89,19 @@ public class GameController : MonoBehaviour {
     }
   }
 
+  bool destroyGame = false;
   private void OnGUI() {
     GUILayout.BeginArea(new Rect(0, 35, 300, 500));
     GUILayout.Label("GameID: " + game.id);
     GUILayout.Label("PlayerID: " + playerID);
     GUILayout.Label("OwnerID: " + game.owner);
+    GUILayout.Label("RacketID: " + localPlayer.racket.racketID);
     GUILayout.Space(10);
     foreach(PlayerInfo player in players.Values) {
       GUILayout.Label("Player " + player.id + " score: " + player.score);
     }
+    GUILayout.Space(10);
+    if (destroyGame) GUILayout.Label("GAME DESTROYED!");
     GUILayout.EndArea();
   }
 }

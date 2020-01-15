@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Collections;
@@ -9,6 +10,8 @@ public class Client : MonoBehaviour {
   public NetworkConnection connection;
   public string ip = "127.0.0.1";
   public ushort port = 9000;
+
+  [SerializeField] List<PacketType> disableLogger = new List<PacketType>();
   
   Menu menu;
   GameController gameController;
@@ -70,7 +73,7 @@ public class Client : MonoBehaviour {
   void OnDataReceived(DataStreamReader stream) {
     var context = default(DataStreamReader.Context);
     PacketType type = (PacketType) stream.ReadInt(ref context);
-    Debug.LogFormat("[CLIENT]: {0}", type);
+    if (!disableLogger.Contains(type)) Debug.LogFormat("[CLIENT]: {0}", type);
 
     switch(type) {
       // MENU
@@ -108,6 +111,12 @@ public class Client : MonoBehaviour {
         var gameCancelEvent = new NetPackets.GameCancelEVENT().Receive(ref stream, ref context);
         menu.GameCancelEVENT(gameCancelEvent);
         break;
+
+      case PacketType.LobbyDestroyEVENT:
+        if (menu == null) break;
+        var lobbyDestroyEvent = new NetPackets.LobbyDestroyEVENT().Receive(ref stream, ref context);
+        menu.LobbyDestroyEVENT(lobbyDestroyEvent);
+        break;
       
       case PacketType.GameStartEVENT:
         if (menu == null) break;
@@ -132,6 +141,13 @@ public class Client : MonoBehaviour {
         if (!isGame) break;
         var playerFailEvent = new NetPackets.PlayerFailEVENT().Receive(ref stream, ref context);
         gameController.OnPlayerFail(playerFailEvent.id);
+        break;
+      
+      case PacketType.GameDestroyEVENT:
+        if (!isGame) break;
+        var gameDestroyEvent = new NetPackets.GameDestroyEVENT().Receive(ref stream, ref context);
+        if (gameDestroyEvent.id != activeGame.id) break;
+        gameController.OnGameDestroy();
         break;
     }
   }

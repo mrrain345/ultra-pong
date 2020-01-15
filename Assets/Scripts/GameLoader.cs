@@ -9,10 +9,17 @@ public class GameLoader : MonoBehaviour {
   [SerializeField] new GameObject camera;
   [Space]
   [SerializeField] bool editorClient = false;
+  [SerializeField] bool serverBuild = false;
   
 #if UNITY_EDITOR
+  static bool instanceExists = false;
+
   private void Start() {
-    server.enabled = true;
+    if (!instanceExists) {
+      server.enabled = true;
+      instanceExists = true;
+    }
+
     if (editorClient) {
       client.enabled = true;
       menu.SetActive(true);
@@ -21,9 +28,13 @@ public class GameLoader : MonoBehaviour {
   }
 #else
   private void Start() {
-    client.enabled = true;
-    menu.SetActive(true);
-    camera.SetActive(true);
+    if (serverBuild) {
+      server.enabled = true;
+    } else {
+      client.enabled = true;
+      menu.SetActive(true);
+      camera.SetActive(true);
+    }
   }
 #endif
 }

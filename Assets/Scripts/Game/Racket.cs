@@ -29,19 +29,27 @@ public class Racket : MonoBehaviour, IComparable<Racket> {
   void FixedUpdate () {
     if (isLocalPlayer) {
       float pos = Input.GetAxisRaw("Vertical") * speed * Time.fixedDeltaTime;
-      if (Mathf.Approximately(pos, 0)) return;
-      rigidbody.MovePosition(rigidbody.position + new Vector2(0, pos));
+      //if (Mathf.Approximately(pos, 0)) return;
+      rigidbody.MovePosition(rigidbody.position + GetDirection() * pos);
       gameController.RacketMove(transform.position.y);
     }
   }
 
   public int CompareTo(Racket racket) {
-    return racket.racketID - racketID;
+    return racketID - racket.racketID;
   }
 
   public void OnMove(float position) {
     Vector3 pos = transform.position;
     pos.y = position;
     transform.position = pos;
+  }
+
+  Vector2 GetDirection() {
+    if (racketID == 1) return Vector2.up;
+    if (racketID == 2) return Vector2.down;
+    
+    Debug.LogError("Bad RacketID: " + racketID);
+    return Vector2.zero;
   }
 }

@@ -3,16 +3,16 @@ using Unity.Collections;
 using Unity.Networking.Transport;
 
 namespace NetPackets {
-  public struct GameDestroyEVENT : INetPacket<GameDestroyEVENT> {
-    public PacketType type => PacketType.GameDestroyEVENT;
+  public struct LobbyDestroyEVENT : INetPacket<LobbyDestroyEVENT> {
+    public PacketType type => PacketType.LobbyDestroyEVENT;
 
     public int id;
 
-    public GameDestroyEVENT(int id) {
+    public LobbyDestroyEVENT(int id) {
       this.id = id;
     }
 
-    public GameDestroyEVENT Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
+    public LobbyDestroyEVENT Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
       this.id = stream.ReadInt(ref context);
 
       return this;

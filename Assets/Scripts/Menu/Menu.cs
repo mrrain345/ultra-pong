@@ -47,8 +47,6 @@ public class Menu : MonoBehaviour {
   bool isYourGame = false;
   GameInfo selectedGame = null;
 
-  bool gameListRefreshed = false;
-
   private void Start() {
     playersObj.SetActive(false);
     button.interactable = false;
@@ -56,11 +54,9 @@ public class Menu : MonoBehaviour {
   }
 
   private void FixedUpdate() {
-    if (gameListRefreshed) return;
-
     time += Time.fixedDeltaTime;
-    if (time > 0.5f) {
-      gameListRefreshed = true;
+    if (time > 3f) {
+      time = 0;
       RefreshGameList();
     }
   }
@@ -153,6 +149,10 @@ public class Menu : MonoBehaviour {
 
   public void GameCancelEVENT(NetPackets.GameCancelEVENT game) {
     lobbyPlayers.text = game.acceptedPlayers + " / " + game.playerCount;
+  }
+
+  public void LobbyDestroyEVENT(NetPackets.LobbyDestroyEVENT game) {
+    
   }
 
   public void GameStartEVENT(NetPackets.GameStartEVENT game) {
