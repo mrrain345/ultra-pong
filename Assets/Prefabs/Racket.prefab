@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3233901905388211633}
   - component: {fileID: 6949828996701327724}
   - component: {fileID: 8462866865947906333}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Racket
   m_TagString: Racket
   m_Icon: {fileID: 0}
@@ -94,13 +94,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2d91d8af5dce6560c80245f710e6a71d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  racketID: 0
-  maxPosition: 3.25
   playerColor: {r: 0, g: 1, b: 1, a: 1}
-  gameController: {fileID: 0}
   border: {fileID: 8165981856237370052}
   speed: 7
-  isLocalPlayer: 0
+  maxPosition: 3.25
+  racketID: 0
   playerID: 0
 --- !u!1 &8165981856133713966
 GameObject:
@@ -112,7 +110,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8165981856133713967}
   - component: {fileID: 8165981856133713964}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: racket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -193,7 +191,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8165981856237370055}
   - component: {fileID: 8165981856237370052}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: racket_border
   m_TagString: Untagged
   m_Icon: {fileID: 0}

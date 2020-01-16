@@ -73,8 +73,8 @@ public class Server : MonoBehaviour {
         break;
       
       case PacketType.PlayerFail:
-        int playerID = new NetPackets.PlayerFail().Receive(ref stream, ref context).id;
-        PlayerFail(player, playerID);
+        var playerFail = new NetPackets.PlayerFail().Receive(ref stream, ref context);
+        PlayerFail(player, playerFail);
         break;
     }
   }
@@ -174,12 +174,12 @@ public class Server : MonoBehaviour {
     }
   }
 
-  void PlayerFail(Player player, int playerID) {
+  void PlayerFail(Player player, NetPackets.PlayerFail playerFail) {
     GameInfo game = activeGames.Find(g => g.ContainsPlayer(player.id));
     if (game == null) return;
     if (game.owner != player.id) return;
 
-    var playerFailEvent = new NetPackets.PlayerFailEVENT(playerID);
+    var playerFailEvent = new NetPackets.PlayerFailEVENT(playerFail.failed, playerFail.lastTouched);
     foreach (int id in game.playerIDs) {
       playerFailEvent.Send(driver, players[id].connection);
     }

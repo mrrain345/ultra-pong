@@ -132,7 +132,7 @@ public class Client : MonoBehaviour {
       case PacketType.PlayerFailEVENT:
         if (!isGame) break;
         var playerFailEvent = new NetPackets.PlayerFailEVENT().Receive(ref stream, ref context);
-        gameController.OnPlayerFail(playerFailEvent.id);
+        gameController.OnPlayerFail(playerFailEvent.failed, playerFailEvent.lastTouched);
         break;
       
       case PacketType.GameDestroyEVENT:

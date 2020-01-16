@@ -4,10 +4,9 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour {
-  
-  public bool isOwner => playerID == game.owner;
 
   [SerializeField] GameObject racketObj;
+  [SerializeField] GameObject ball;
   [SerializeField] Transform background;
   [SerializeField] new Camera camera;
   [SerializeField] Vector2 gravity;
@@ -19,9 +18,12 @@ public class GameController : MonoBehaviour {
 
 
   [HideInInspector] public Client client;
+  [HideInInspector] public Racket lastTouched;
+
   public GameInfo game => client.activeGame;
   public int playerID => client.playerID;
   public PlayerInfo localPlayer => players[playerID];
+  public bool isOwner => playerID == game.owner;
   Dictionary<int, PlayerInfo> players;
 
   private void Start() {
@@ -34,6 +36,7 @@ public class GameController : MonoBehaviour {
     client.SetGameController(this);
     SpawnRackets();
     maps[game.playerCount-2].SetActive(true);
+    GameObject.Instantiate(ball);
   }
 
   void SpawnRackets() {
@@ -56,6 +59,7 @@ public class GameController : MonoBehaviour {
         camera.transform.rotation = rot;
         camera.orthographicSize = cameraSize;
         Physics2D.gravity = rot * gravity;
+        lastTouched = racket;
       }
     }
   }
@@ -65,14 +69,16 @@ public class GameController : MonoBehaviour {
   }
 
   public void OnBallMove(Vector2 position, Vector2 velocity) {
-    FindObjectOfType<Ball>().SetPosition(position, velocity);
+    Ball ball = FindObjectOfType<Ball>();
+    if (ball != null) ball.SetPosition(position, velocity);
   }
 
-  public void OnPlayerFail(int playerID) {
+  public void OnPlayerFail(int playerID, int lastTouched) {
     foreach (PlayerInfo player in players.Values) {
       if (playerID == player.id) continue;
       player.score++;
     }
+    this.lastTouched = players[lastTouched].racket;
     FindObjectOfType<Ball>().Explode();
   }
 
@@ -103,7 +109,7 @@ public class GameController : MonoBehaviour {
     if (!isOwner) return;
     foreach (PlayerInfo player in players.Values) {
       if (player.racket.racketID == racketID) {
-        new NetPackets.PlayerFail(player.id).Send(client.driver, client.connection);
+        new NetPackets.PlayerFail(player.id, lastTouched.playerID).Send(client.driver, client.connection);
         return;
       }
     }

@@ -23,7 +23,7 @@ public class Explosion : MonoBehaviour {
     time += Time.fixedDeltaTime;
     if (!created && time > 1f) {
       created = true;
-      GameObject.Instantiate(ball, Vector3.zero, Quaternion.identity);
+      GameObject.Instantiate(ball);
     }
   }
 }

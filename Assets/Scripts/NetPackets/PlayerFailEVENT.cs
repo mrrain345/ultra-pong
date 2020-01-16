@@ -6,23 +6,27 @@ namespace NetPackets {
   public struct PlayerFailEVENT : INetPacket<PlayerFailEVENT> {
     public PacketType type => PacketType.PlayerFailEVENT;
 
-    public int id;
+    public int failed;
+    public int lastTouched;
 
-    public PlayerFailEVENT(int id) {
-      this.id = id;
+    public PlayerFailEVENT(int failed, int lastTouched) {
+      this.failed = failed;
+      this.lastTouched = lastTouched;
     }
 
     public PlayerFailEVENT Receive(ref DataStreamReader stream, ref DataStreamReader.Context context) {
-      this.id = stream.ReadInt(ref context);
+      this.failed = stream.ReadInt(ref context);
+      this.lastTouched = stream.ReadInt(ref context);
 
       return this;
     }
 
     public void Send(UdpNetworkDriver driver, NetworkConnection connection) {
-      using (var writer = new DataStreamWriter(4*2, Allocator.Temp)) {
+      using (var writer = new DataStreamWriter(4*3, Allocator.Temp)) {
         writer.Write((int) this.type);
         
-        writer.Write(id);
+        writer.Write(failed);
+        writer.Write(lastTouched);
         
         connection.Send(driver, writer);
       }

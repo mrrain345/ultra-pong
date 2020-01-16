@@ -9,9 +9,9 @@ public class Racket : MonoBehaviour {
 
   [HideInInspector] public int racketID;
   [HideInInspector] public int playerID;
+  [HideInInspector] public Vector3 startPosition;
 
   GameController gameController;
-  Vector3 startPosition;
   bool isLocalPlayer;
   float position = 0;
   float time = 0f;

@@ -14,8 +14,13 @@ public class Ball : MonoBehaviour {
 
   void Start() {
     rigidbody = GetComponent<Rigidbody2D>();
-    rigidbody.velocity = Vector2.left * speed;
     game = FindObjectOfType<GameController>();
+    Vector3 dir = game.lastTouched.startPosition.normalized;
+    rigidbody.velocity = dir * speed;
+  }
+
+  private void Update() {
+    Debug.DrawRay(Vector3.zero, game.lastTouched.startPosition.normalized * 3, Color.red);
   }
   
   Vector3 HitFactor(Vector3 up, Vector3 ballPos, Vector3 racketPos) {
@@ -27,6 +32,7 @@ public class Ball : MonoBehaviour {
       if (game.isOwner) game.BallMove(transform.position, rigidbody.velocity);
       return;
     }
+    if (game.isOwner) game.lastTouched = col.gameObject.GetComponent<Racket>();
     Vector3 hit = HitFactor(col.transform.up, transform.position, col.transform.position);
     Vector2 dir = (col.transform.right + hit).normalized;
     rigidbody.velocity = dir * (speed + hits * hitAcceleration);
