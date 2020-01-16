@@ -1,55 +1,50 @@
-﻿using System;
-using UnityEngine;
-using Unity.Collections;
-using Unity.Networking.Transport;
+﻿using UnityEngine;
 
-public class Racket : MonoBehaviour, IComparable<Racket> {
-
-  public int racketID = 0;
-  public float speed = 7;
-
-  float time = 0f;
+public class Racket : MonoBehaviour {
 
   [SerializeField] Color playerColor;
-  [SerializeField] GameController gameController;
   [SerializeField] SpriteRenderer border;
+  [SerializeField] float speed = 7;
+  [SerializeField] float maxPosition = 3.25f;
 
-  [HideInInspector] public bool isLocalPlayer;
+  [HideInInspector] public int racketID;
   [HideInInspector] public int playerID;
 
-  new Rigidbody2D rigidbody;
+  GameController gameController;
+  Vector3 startPosition;
+  bool isLocalPlayer;
+  float position = 0;
+  float time = 0f;
 
-  void Start() {
-    if (racketID == 0) throw new Exception("RacketID is not set");
-    rigidbody = GetComponent<Rigidbody2D>();
+  public void Setup(GameController gameController, int racketID, int playerID) {
+    this.gameController = gameController;
+    this.racketID = racketID;
+    this.playerID = playerID;
 
-    if (isLocalPlayer) border.color = playerColor; 
+    startPosition = transform.position;
+    isLocalPlayer = (gameController.playerID == playerID);
+    if (isLocalPlayer) border.color = playerColor;
+  }
+
+  private void Update() {
+    Debug.DrawLine(startPosition - transform.up * (maxPosition+1.25f), startPosition + transform.up * (maxPosition+1.25f), Color.red);
   }
 
   void FixedUpdate () {
     if (isLocalPlayer) {
-      float pos = Input.GetAxisRaw("Vertical") * speed * Time.fixedDeltaTime;
-      //if (Mathf.Approximately(pos, 0)) return;
-      rigidbody.MovePosition(rigidbody.position + GetDirection() * pos);
-      gameController.RacketMove(transform.position.y);
+      float pos = Input.GetAxisRaw("Vertical") * (speed / maxPosition) * Time.fixedDeltaTime;
+      time += Time.fixedDeltaTime;
+      if (Mathf.Approximately(pos, 0f) && time < 2f) return;
+      time = 0f;
+
+      position = Mathf.Clamp(position + pos, -1f, 1f);
+      transform.position = startPosition + transform.up * (position * maxPosition);
+      gameController.RacketMove(position);
     }
   }
 
-  public int CompareTo(Racket racket) {
-    return racketID - racket.racketID;
-  }
-
   public void OnMove(float position) {
-    Vector3 pos = transform.position;
-    pos.y = position;
-    transform.position = pos;
-  }
-
-  Vector2 GetDirection() {
-    if (racketID == 1) return Vector2.up;
-    if (racketID == 2) return Vector2.down;
-    
-    Debug.LogError("Bad RacketID: " + racketID);
-    return Vector2.zero;
+    this.position = position;
+    transform.position = startPosition + transform.up * (position * maxPosition);
   }
 }

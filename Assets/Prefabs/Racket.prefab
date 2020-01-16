@@ -95,10 +95,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   racketID: 0
-  speed: 7
+  maxPosition: 3.25
   playerColor: {r: 0, g: 1, b: 1, a: 1}
   gameController: {fileID: 0}
   border: {fileID: 8165981856237370052}
+  speed: 7
   isLocalPlayer: 0
   playerID: 0
 --- !u!1 &8165981856133713966

@@ -50,15 +50,7 @@ public class Client : MonoBehaviour {
     menu = null;
     activeGame = game;
     this.playerID = playerID;
-    
-    switch (game.mode) {
-      case GameInfo.Mode.PlayerVsPlayer:
-        SceneManager.LoadScene(1);
-        break;
-      default:
-        StopGame();
-        break;
-    }
+    SceneManager.LoadScene(1);
   }
 
   public void StopGame() {

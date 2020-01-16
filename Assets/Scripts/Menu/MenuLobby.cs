@@ -9,13 +9,15 @@ public class MenuLobby : MonoBehaviour {
   GameInfo game;
   Menu menu;
 
+  string[] modes = new string[] { "Player vs Player", "Octagon", "Battle Royal" };
+
   public void Initialize(GameInfo game, Menu menu) {
     this.game = game;
     this.menu = menu;
 
     name.text = game.name;
     players.text = game.acceptedPlayers + " / " + game.playerCount;
-    mode.text = game.mode.ToString();
+    mode.text = modes[(int)game.mode];
   }
 
   public void OnClick() {

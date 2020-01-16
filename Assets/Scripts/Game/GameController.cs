@@ -7,13 +7,21 @@ public class GameController : MonoBehaviour {
   
   public bool isOwner => playerID == game.owner;
 
-  [SerializeField] new CameraController camera;
+  [SerializeField] GameObject racketObj;
+  [SerializeField] Transform background;
+  [SerializeField] new Camera camera;
+  [SerializeField] Vector2 gravity;
 
-  Client client;
-  GameInfo game => client.activeGame;
-  int playerID => client.playerID;
-  PlayerInfo localPlayer => players[playerID];
+  [Space]
+  [SerializeField] GameObject[] maps;
+  [Tooltip("x: cameraSize, y: racketRadius")]
+  [SerializeField] Vector2[] settings;
 
+
+  [HideInInspector] public Client client;
+  public GameInfo game => client.activeGame;
+  public int playerID => client.playerID;
+  public PlayerInfo localPlayer => players[playerID];
   Dictionary<int, PlayerInfo> players;
 
   private void Start() {
@@ -23,21 +31,33 @@ public class GameController : MonoBehaviour {
       return;
     }
 
-    List<Racket> rackets = new List<Racket>(FindObjectsOfType<Racket>());
-    rackets.Sort();
-
-    players = new Dictionary<int, PlayerInfo>(game.playerIDs.Count);
-    int i = 0;
-    foreach (int playerID in game.playerIDs) {
-      rackets[i].playerID = playerID;
-      if (playerID == this.playerID) {
-        rackets[i].isLocalPlayer = true;
-      }
-      players[playerID] = new PlayerInfo(playerID, rackets[i++]);
-    }
-
     client.SetGameController(this);
-    camera.Setup(game, localPlayer.racket.racketID);
+    SpawnRackets();
+    maps[game.playerCount-2].SetActive(true);
+  }
+
+  void SpawnRackets() {
+    players = new Dictionary<int, PlayerInfo>(game.playerCount);
+    float racketRadius = settings[game.playerCount-2].y;
+    float cameraSize = settings[game.playerCount-2].x;
+    background.localScale = new Vector3(cameraSize, cameraSize, 1);
+
+    for (int i = 0; i < game.playerCount; i++) {
+      float angle = i * (360 / game.playerCount);
+      Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
+      Vector3 pos = rot * Vector3.left * racketRadius;
+
+      Racket racket = GameObject.Instantiate(racketObj, pos, rot).GetComponent<Racket>();
+      int playerID = game.playerIDs[i];
+      racket.Setup(this, i, playerID);
+      players[playerID] = new PlayerInfo(playerID, racket);
+
+      if (playerID == this.playerID) {
+        camera.transform.rotation = rot;
+        camera.orthographicSize = cameraSize;
+        Physics2D.gravity = rot * gravity;
+      }
+    }
   }
 
   public void OnRacketMove(int playerID, float position) {

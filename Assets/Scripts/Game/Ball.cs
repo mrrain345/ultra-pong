@@ -3,13 +3,14 @@
 public class Ball : MonoBehaviour {
   
   public float speed = 10f;
-  public float hitAcceleration = 0.1f;
+  public float hitAcceleration = 0.15f;
   public GameObject explodeObj;
 
   GameController game;
   new Rigidbody2D rigidbody;
   int hits = 0;
   float time = 0f;
+  float racketHeight = 1.25f;
 
   void Start() {
     rigidbody = GetComponent<Rigidbody2D>();
@@ -17,8 +18,8 @@ public class Ball : MonoBehaviour {
     game = FindObjectOfType<GameController>();
   }
   
-  float hitFactor(Vector2 ballPos, Vector2 racketPos, float racketHeight) {
-    return (ballPos.y - racketPos.y) / racketHeight;
+  Vector3 HitFactor(Vector3 up, Vector3 ballPos, Vector3 racketPos) {
+    return Vector3.Project(ballPos - racketPos, up) / racketHeight;
   }
 
   void OnCollisionEnter2D(Collision2D col) {
@@ -26,8 +27,8 @@ public class Ball : MonoBehaviour {
       if (game.isOwner) game.BallMove(transform.position, rigidbody.velocity);
       return;
     }
-    float y = hitFactor(transform.position, col.transform.position, col.collider.bounds.size.y);
-    Vector2 dir = new Vector2(col.transform.right.x, y).normalized;
+    Vector3 hit = HitFactor(col.transform.up, transform.position, col.transform.position);
+    Vector2 dir = (col.transform.right + hit).normalized;
     rigidbody.velocity = dir * (speed + hits * hitAcceleration);
     hits++;
 
