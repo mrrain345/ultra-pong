@@ -1523,6 +1523,7 @@ GameObject:
   m_Component:
   - component: {fileID: 621251324}
   - component: {fileID: 621251325}
+  - component: {fileID: 621251326}
   m_Layer: 0
   m_Name: Game Controller
   m_TagString: GameController
@@ -1576,6 +1577,19 @@ MonoBehaviour:
   - {x: 10, y: 8.2}
   client: {fileID: 0}
   lastTouched: {fileID: 0}
+--- !u!114 &621251326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 621251323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5bf3507a310e06d0393c04f8901e093f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameController: {fileID: 621251325}
 --- !u!1 &623181041
 GameObject:
   m_ObjectHideFlags: 0
@@ -2722,60 +2736,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 993168363}
   m_RootOrder: 0
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1362277211
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1362277213}
-  - component: {fileID: 1362277212}
-  m_Layer: 0
-  m_Name: Test
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &1362277212
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1362277211}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f1452e3df05ce2e99bd2e9f168a3972, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  players: 2
-  cameraSize: 5
-  racketRadius: 7.5
-  maxPosition: 3.25
-  camera: {fileID: 519420031}
-  settings:
-  - {x: 5, y: 7.5}
-  - {x: 9.5, y: 7.5}
-  - {x: 6, y: 5}
-  - {x: 8.5, y: 6.5}
-  - {x: 10, y: 8.2}
---- !u!4 &1362277213
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1362277211}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1418990921
 GameObject:

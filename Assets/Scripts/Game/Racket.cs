@@ -30,16 +30,16 @@ public class Racket : MonoBehaviour {
     Debug.DrawLine(startPosition - transform.up * (maxPosition+1.25f), startPosition + transform.up * (maxPosition+1.25f), Color.red);
   }
 
-  void FixedUpdate () {
+  public void Move(float position) {
     if (isLocalPlayer) {
-      float pos = Input.GetAxisRaw("Vertical") * (speed / maxPosition) * Time.fixedDeltaTime;
+      float pos = position * (speed / maxPosition) * Time.fixedDeltaTime;
       time += Time.fixedDeltaTime;
       if (Mathf.Approximately(pos, 0f) && time < 2f) return;
       time = 0f;
 
-      position = Mathf.Clamp(position + pos, -1f, 1f);
-      transform.position = startPosition + transform.up * (position * maxPosition);
-      gameController.RacketMove(position);
+      this.position = Mathf.Clamp(this.position + pos, -1f, 1f);
+      transform.position = startPosition + transform.up * (this.position * maxPosition);
+      gameController.RacketMove(this.position);
     }
   }
 
