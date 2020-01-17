@@ -11,6 +11,11 @@ public class Test : MonoBehaviour {
   [Space]
   public new Camera camera;
 
+  public Transform point;
+  public float offset = 1.5f;
+
+  public List<int> playersAlive = new List<int>(new int[] { 0, 1, 2, 3, 4, 5});
+
   List<Vector3> positions = new List<Vector3>();
   List<Quaternion> rotations = new List<Quaternion>();
 
@@ -25,14 +30,14 @@ public class Test : MonoBehaviour {
   };
 
   private void OnValidate() {
-    if (oldPlayers != players) {
+    /*if (oldPlayers != players) {
       oldPlayers = players;
       cameraSize = settings[players-2].x;
       racketRadius = settings[players-2].y;
     }
 
     camera.orthographicSize = cameraSize;
-    SpawnRackets();
+    SpawnRackets();*/
     //PrintPositions();
   }
 
@@ -52,11 +57,29 @@ public class Test : MonoBehaviour {
     }
   }
 
+  void DebugFields() {
+    float racketRadius = 8.2f + offset;
+    string[] testColors = new string[] { "CYAN", "RED", "GREEN", "YELLOW", "MAGENTA", "BLUE" };
+
+    if (point.position.sqrMagnitude > racketRadius*racketRadius) {
+      float angle = Vector2.SignedAngle(Vector2.right, point.position.normalized) + 180f;
+      int id = Mathf.RoundToInt(angle * playersAlive.Count / 360);
+      
+      if (id >= playersAlive.Count) id -= playersAlive.Count;
+      Debug.LogFormat("Player Failed: fieldID: {0}, racketID: {1}, color: {2}, angle: {3}", id, playersAlive[id], testColors[playersAlive[id]], angle);
+      //game.PlayerFail(game.playersAlive[id]);
+    }
+  }
+
+  private void FixedUpdate() {
+    DebugFields();
+  }
+
   void Update() {
-    for (int i = 0; i < positions.Count; i++) {
+    /*for (int i = 0; i < positions.Count; i++) {
       Vector3 up = rotations[i] * Vector3.up;
       Debug.DrawLine(positions[i] - up * (maxPosition+1.25f), positions[i] + up * (maxPosition+1.25f), Color.red);
-    }
+    }*/
   }
 
   void PrintPositions() {

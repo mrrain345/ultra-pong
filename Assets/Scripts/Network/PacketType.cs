@@ -20,5 +20,7 @@ public enum PacketType : int {
   BallMove,         // float position.x, float position.y, float velocity.x, float velocity.y
   BallMoveEVENT,    // float position.x, float position.y, float velocity.x, float velocity.y
   PlayerFail,       // int id
-  PlayerFailEVENT   // int id
+  PlayerFailEVENT,  // int id
+  Ping,             //
+  PingACK,          //
 }

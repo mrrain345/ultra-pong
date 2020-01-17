@@ -2439,7 +2439,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ip: 127.0.0.1
   port: 9000
-  disableLogger: 0c0000000e000000110000001300000015000000
+  disableLogger: 0c0000000e00000011000000130000001500000017000000
 --- !u!114 &888832114
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2453,7 +2453,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   port: 9000
-  disableLogger: 10000000120000000d00000014000000
+  disableLogger: 10000000120000000d0000001400000016000000
 --- !u!4 &888832115
 Transform:
   m_ObjectHideFlags: 0

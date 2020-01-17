@@ -95,11 +95,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerColor: {r: 0, g: 1, b: 1, a: 1}
-  border: {fileID: 8165981856237370052}
+  borderSprite: {fileID: 8165981856237370052}
+  racketSprite: {fileID: 8165981856133713964}
   speed: 7
   maxPosition: 3.25
   racketID: 0
   playerID: 0
+  startPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &8165981856133713966
 GameObject:
   m_ObjectHideFlags: 0

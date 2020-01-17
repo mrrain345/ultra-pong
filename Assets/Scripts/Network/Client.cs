@@ -15,6 +15,7 @@ public class Client : MonoBehaviour {
   
   Menu menu;
   GameController gameController;
+  float time;
 
   public bool IsConnected { get; private set; }
   public GameInfo activeGame { get; private set; }
@@ -59,6 +60,15 @@ public class Client : MonoBehaviour {
     SceneManager.LoadScene(0);
     menu = FindObjectOfType<Menu>();
     menu.RefreshGameList();
+  }
+
+  private void FixedUpdate() {
+    if (!IsConnected) return;
+    time += Time.fixedDeltaTime;
+    if (time > 2f) {
+      time = 0;
+      new NetPackets.Ping().Send(driver, connection);
+    }
   }
 
 

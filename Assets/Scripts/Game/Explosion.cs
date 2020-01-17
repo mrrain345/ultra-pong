@@ -2,14 +2,16 @@
 
 public class Explosion : MonoBehaviour {
   
-  public GameObject ball;
   public float multiplier = 5f;
   public float lifeTime = 3f;
   
   float time = 0;
   bool created = false;
+  Ball ball;
 
-  public void Explode(Vector3 velocity = new Vector3()) {
+  public void Explode(Ball ball, Vector3 velocity = new Vector3()) {
+    this.ball = ball;
+
     foreach (Transform child in transform) {
       Rigidbody2D rbody = child.GetComponent<Rigidbody2D>();
       rbody.constraints = RigidbodyConstraints2D.None;
@@ -23,7 +25,7 @@ public class Explosion : MonoBehaviour {
     time += Time.fixedDeltaTime;
     if (!created && time > 1f) {
       created = true;
-      GameObject.Instantiate(ball);
+      ball.Spawn();
     }
   }
 }

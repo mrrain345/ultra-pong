@@ -41,6 +41,10 @@ public class Server : MonoBehaviour {
     int gameID;
 
     switch (type) {
+      case PacketType.Ping:
+        new NetPackets.PingACK().Send(driver, player.connection);
+        break;
+
       // MENU
       case PacketType.GameCreate:
         var gameCreate = new NetPackets.GameCreate().Receive(ref stream, ref context);

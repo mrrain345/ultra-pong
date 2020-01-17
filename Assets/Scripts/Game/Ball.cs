@@ -1,26 +1,23 @@
 ﻿using UnityEngine;
 
 public class Ball : MonoBehaviour {
-  
+
+  public GameController game;  
   public float speed = 10f;
   public float hitAcceleration = 0.15f;
   public GameObject explodeObj;
 
-  GameController game;
   new Rigidbody2D rigidbody;
   int hits = 0;
   float time = 0f;
   float racketHeight = 1.25f;
+  float startSpeed;
+  bool active;
 
   void Start() {
     rigidbody = GetComponent<Rigidbody2D>();
-    game = FindObjectOfType<GameController>();
-    Vector3 dir = game.lastTouched.startPosition.normalized;
-    rigidbody.velocity = dir * speed;
-  }
-
-  private void Update() {
-    Debug.DrawRay(Vector3.zero, game.lastTouched.startPosition.normalized * 3, Color.red);
+    startSpeed = speed;
+    Spawn();
   }
   
   Vector3 HitFactor(Vector3 up, Vector3 ballPos, Vector3 racketPos) {
@@ -51,16 +48,45 @@ public class Ball : MonoBehaviour {
 
   private void FixedUpdate() {
     if (!game.isOwner) return;
+
     time += Time.fixedDeltaTime;
-    if (time < 0.2f) return;
-    time = 0f;
-    game.BallMove(transform.position, rigidbody.velocity);
+    if (time > 0.2f) {
+      time = 0f;
+      game.BallMove(transform.position, rigidbody.velocity);
+    }
+
+    if (game.game.mode == GameInfo.Mode.BattleRoyal && active) {
+      float radius = game.racketRadius + 1.5f;
+      if (transform.position.sqrMagnitude > radius*radius) {
+        float angle = Vector2.SignedAngle(Vector2.right, transform.position.normalized) + 180f;
+        int id = Mathf.RoundToInt(angle * game.playersAlive.Count / 360);
+        if (id >= game.playersAlive.Count) id -= game.playersAlive.Count;
+        Debug.LogFormat("Player Failed: fieldID: {0}, playerID: {1}", id, game.playersAlive[id]);
+        int playerID = game.playersAlive[id];
+        int racketID = game.players[playerID].racket.racketID;
+        game.PlayerFail(racketID);
+      }
+    }
   }
 
   public void Explode() {
     GameObject obj = GameObject.Instantiate(explodeObj, transform.position + Vector3.back, transform.rotation);
-    obj.GetComponent<Explosion>().Explode();
-    Destroy(gameObject);
+    obj.GetComponent<Explosion>().Explode(this);
+    hits = 0;
+    speed = startSpeed;
+    transform.position = new Vector3(1000, 1000, 0);
+    rigidbody.velocity = Vector3.zero;
+    active = false;
+  }
+
+  public void Spawn() {
+    active = true;
+    if (game.isOwner) {
+      transform.position = Vector3.zero;
+      Vector3 dir = game.lastTouched.startPosition.normalized;
+      rigidbody.velocity = dir * speed;
+      game.BallMove(transform.position, rigidbody.velocity);
+    }
   }
 
   public void SetPosition(Vector2 position, Vector2 velocity) {
