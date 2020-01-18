@@ -95,8 +95,8 @@ public class GameController : MonoBehaviour {
     }
   }
 
-  public void OnRacketMove(int playerID, float position) {
-    players[playerID].racket.OnMove(position);
+  public void OnRacketMove(int playerID, float position, float velocity) {
+    players[playerID].racket.OnMove(position, velocity);
   }
 
   public void OnBallMove(Vector2 position, Vector2 velocity, int bounceMode) {
@@ -117,7 +117,7 @@ public class GameController : MonoBehaviour {
     else {
       playersAlive.Remove(playerID);
       if (playersAlive.Count > 1) {
-        foreach (int id in playersAlive) players[id].racket.OnMove(0);
+        foreach (int id in playersAlive) players[id].racket.OnMove(0, 0);
         players[playerID].racket.gameObject.SetActive(false);
       } else {
         players[playersAlive[0]].score++;
@@ -127,7 +127,7 @@ public class GameController : MonoBehaviour {
 
         foreach (PlayerInfo player in players.Values) {
           player.racket.gameObject.SetActive(true);
-          player.racket.OnMove(0);
+          player.racket.OnMove(0, 0);
           player.racket.startPosition = player.racket.transform.position;
         }
 
@@ -158,8 +158,8 @@ public class GameController : MonoBehaviour {
     Physics2D.gravity = rot * gravity;
   }
 
-  public void RacketMove(float position) {
-    new NetPackets.RacketMove(position).Send(client.driver, client.connection);
+  public void RacketMove(float position, float velocity) {
+    new NetPackets.RacketMove(position, velocity).Send(client.driver, client.connection);
   }
 
   public void GameFinish() {

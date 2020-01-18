@@ -128,7 +128,7 @@ public class Client : MonoBehaviour {
       case PacketType.RacketMoveEVENT:
         if (!isGame) break;
         var racketMoveEvent = new NetPackets.RacketMoveEVENT().Receive(ref stream, ref context);
-        gameController.OnRacketMove(racketMoveEvent.playerID, racketMoveEvent.position);
+        gameController.OnRacketMove(racketMoveEvent.playerID, racketMoveEvent.position, racketMoveEvent.velocity);
         break;
 
       case PacketType.BallMoveEVENT:

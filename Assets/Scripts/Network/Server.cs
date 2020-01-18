@@ -67,8 +67,8 @@ public class Server : MonoBehaviour {
       
       // GAME
       case PacketType.RacketMove:
-        float RacketPos = new NetPackets.RacketMove().Receive(ref stream, ref context).position;
-        RacketMove(player, RacketPos);
+        var racketMove = new NetPackets.RacketMove().Receive(ref stream, ref context);
+        RacketMove(player, racketMove.position, racketMove.velocity);
         break;
 
       case PacketType.BallMove:
@@ -103,7 +103,6 @@ public class Server : MonoBehaviour {
     gameLobby.Add(game);
 
     new NetPackets.GameCreateACK(game).Send(driver, player.connection);
-    Debug.LogFormat("[SERVER] GAME CREATED  name: '{0}', players: {1}, mode: {2}", gameCreate.name, gameCreate.players, gameCreate.mode);
     LobbyChangedEvent();
   }
 
@@ -160,11 +159,11 @@ public class Server : MonoBehaviour {
     }
   }
 
-  void RacketMove(Player player, float position) {
+  void RacketMove(Player player, float position, float velocity) {
     GameInfo game = activeGames.Find(g => g.ContainsPlayer(player.id));
     if (game == null) return;
 
-    var racketMoveEvent = new NetPackets.RacketMoveEVENT(player.id, position);
+    var racketMoveEvent = new NetPackets.RacketMoveEVENT(player.id, position, velocity);
     foreach (int playerID in game.playerIDs) {
       if (playerID == player.id) continue;
       racketMoveEvent.Send(driver, players[playerID].connection);

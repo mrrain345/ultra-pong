@@ -25,6 +25,7 @@ public class Menu : MonoBehaviour {
   [Header("Right Panel")]
   [SerializeField] RectTransform lobby;
   [SerializeField] GameObject gameEntry;
+  [SerializeField] float entryRatio = 0.15f;
 
   [Header("Lobby Panel")]
   [SerializeField] TextMeshProUGUI lobbyPlayers;
@@ -89,8 +90,6 @@ public class Menu : MonoBehaviour {
   }
 
   public void SelectGame(GameInfo game) {
-    Debug.LogFormat("[MENU] Game selected: '{0}'", game.name);
-
     selectedGame = game;
     isYourGame = false;
     isLobby = true;
@@ -112,7 +111,8 @@ public class Menu : MonoBehaviour {
   public void GameListACK(NetPackets.GameListACK gameListACK) {
     List<GameInfo> gameLobby = gameListACK.gameLobby;
     foreach (RectTransform child in lobby) Destroy(child.gameObject);
-    lobby.sizeDelta = new Vector2(0, 60 * gameLobby.Count);
+    float height = Screen.height * entryRatio;
+    lobby.sizeDelta = new Vector2(0, height * gameLobby.Count);
     
     for (int i = 0; i < gameLobby.Count; i++) {
       GameObject entry = GameObject.Instantiate(gameEntry);
@@ -120,10 +120,10 @@ public class Menu : MonoBehaviour {
       entry.transform.SetParent(lobby);
       RectTransform rect = entry.GetComponent<RectTransform>();
       rect.anchorMin = new Vector2(0, 1);
-      rect.anchorMax = new Vector2(1, 1);
+      rect.anchorMax = new Vector2(0.97f, 1);
       rect.pivot = new Vector2(0, 1);
-      rect.anchoredPosition = new Vector3(0, -60 * i, 0);
-      rect.sizeDelta = new Vector2(0, 60);
+      rect.anchoredPosition = new Vector3(0, -height * i, 0);
+      rect.sizeDelta = new Vector2(0, height);
     }
   }
 

@@ -481,6 +481,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c13f8d93343630f24a6aea184caa1d7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  rect: {fileID: 9218353475726307697}
   name: {fileID: 9218353475628154359}
   players: {fileID: 9218353476752281151}
   mode: {fileID: 9218353474989434784}

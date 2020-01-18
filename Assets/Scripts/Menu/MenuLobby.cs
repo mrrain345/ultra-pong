@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 
 public class MenuLobby : MonoBehaviour {
+
   [SerializeField] new TextMeshProUGUI name;
   [SerializeField] TextMeshProUGUI players;
   [SerializeField] TextMeshProUGUI mode;
