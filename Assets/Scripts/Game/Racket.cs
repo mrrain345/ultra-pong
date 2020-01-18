@@ -14,7 +14,6 @@ public class Racket : MonoBehaviour {
   GameController gameController;
   bool isLocalPlayer;
   float position = 0;
-  float time = 0f;
 
   float Remap(float value, float from1, float to1, float from2, float to2) {
     return (value - from1) / (to1 - from1) * (to2 - from2) + from2;
@@ -42,9 +41,7 @@ public class Racket : MonoBehaviour {
       }
 
       float pos = position * (speed / maxPosition) * Time.fixedDeltaTime;
-      time += Time.fixedDeltaTime;
-      if (Mathf.Approximately(pos, 0f) && time < 1f) return;
-      time = 0f;
+      if (Mathf.Approximately(pos, 0f)) return;
 
       this.position = Mathf.Clamp(this.position + pos, -1f, 1f);
       transform.position = startPosition + transform.up * (this.position * maxPosition);
@@ -54,9 +51,7 @@ public class Racket : MonoBehaviour {
 
   void BattleMove(float position) {
     float pos = position * (speed / maxPosition) * Time.fixedDeltaTime;
-    time += Time.fixedDeltaTime;
-    if (Mathf.Approximately(pos, 0f) && time < 1f) return;
-    time = 0f;
+    if (Mathf.Approximately(pos, 0f)) return;
 
     OnMove(this.position + pos);
     gameController.RacketMove(this.position);
@@ -72,7 +67,7 @@ public class Racket : MonoBehaviour {
     this.position = position;
     float radius = gameController.racketRadius;
     float maxPos = radius * Mathf.PI / maxPosition;
-    float startAngle = gameController.getFieldID(playerID) * (360 / gameController.playersAlive.Count);
+    float startAngle = gameController.getFieldID(playerID) * (360f / gameController.playersAlive.Count);
     float angle = Remap(position, -maxPos, maxPos, -180, 180);
     Quaternion rot = Quaternion.AngleAxis(startAngle - angle, Vector3.forward);
     transform.position = rot * Vector3.left * radius;

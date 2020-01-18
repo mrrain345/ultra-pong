@@ -111,11 +111,7 @@ public class Menu : MonoBehaviour {
 
   public void GameListACK(NetPackets.GameListACK gameListACK) {
     List<GameInfo> gameLobby = gameListACK.gameLobby;
-    
-    foreach (RectTransform child in lobby) {
-      Destroy(child.gameObject);
-    }
-
+    foreach (RectTransform child in lobby) Destroy(child.gameObject);
     lobby.sizeDelta = new Vector2(0, 60 * gameLobby.Count);
     
     for (int i = 0; i < gameLobby.Count; i++) {
@@ -126,7 +122,7 @@ public class Menu : MonoBehaviour {
       rect.anchorMin = new Vector2(0, 1);
       rect.anchorMax = new Vector2(1, 1);
       rect.pivot = new Vector2(0, 1);
-      rect.localPosition = new Vector3(0, -60 * i, 0);
+      rect.anchoredPosition = new Vector3(0, -60 * i, 0);
       rect.sizeDelta = new Vector2(0, 60);
     }
   }
@@ -156,7 +152,7 @@ public class Menu : MonoBehaviour {
   }
 
   public void GameStartEVENT(NetPackets.GameStartEVENT game) {
-    Debug.Log("[CLIENT] GAME START!!");
+    isLobby = false;
     client.StartGame(game.GetGame(), game.playerID);
   }
 }

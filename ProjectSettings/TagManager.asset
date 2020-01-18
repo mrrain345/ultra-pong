@@ -9,6 +9,8 @@ TagManager:
   - MainMenu
   - NetworkManager
   - Field
+  - Background
+  - AudioManager
   layers:
   - Default
   - TransparentFX

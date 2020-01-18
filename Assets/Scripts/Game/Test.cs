@@ -14,12 +14,18 @@ public class Test : MonoBehaviour {
   public Transform point;
   public float offset = 1.5f;
 
-  public List<int> playersAlive = new List<int>(new int[] { 0, 1, 2, 3, 4, 5});
+  [Space]
+  public Color[] racketColors;
+  public GameObject[] fields;
+  [Range(2, 6)] public int playersCount = 6;
+
+  //public List<int> playersAlive = new List<int>(new int[] { 0, 1, 2, 3, 4, 5});
 
   List<Vector3> positions = new List<Vector3>();
   List<Quaternion> rotations = new List<Quaternion>();
 
   int oldPlayers;
+  int oldPlayersCount;
 
   public Vector2[] settings = new Vector2[] {
     new Vector2(5.0f, 7.5f),  // 2
@@ -28,6 +34,8 @@ public class Test : MonoBehaviour {
     new Vector2(8.5f, 6.5f),  // 5
     new Vector2(10.0f, 8.2f)  // 6
   };
+
+  bool refresh;
 
   private void OnValidate() {
     /*if (oldPlayers != players) {
@@ -39,6 +47,11 @@ public class Test : MonoBehaviour {
     camera.orthographicSize = cameraSize;
     SpawnRackets();*/
     //PrintPositions();
+
+    if (oldPlayersCount != playersCount) {
+      oldPlayersCount = playersCount;
+      refresh = true;
+    }
   }
 
   void SpawnRackets() {
@@ -57,7 +70,7 @@ public class Test : MonoBehaviour {
     }
   }
 
-  void DebugFields() {
+  /*void DebugFields() {
     float racketRadius = 8.2f + offset;
     string[] testColors = new string[] { "CYAN", "RED", "GREEN", "YELLOW", "MAGENTA", "BLUE" };
 
@@ -69,13 +82,27 @@ public class Test : MonoBehaviour {
       Debug.LogFormat("Player Failed: fieldID: {0}, racketID: {1}, color: {2}, angle: {3}", id, playersAlive[id], testColors[playersAlive[id]], angle);
       //game.PlayerFail(game.playersAlive[id]);
     }
-  }
+  }*/
 
-  private void FixedUpdate() {
-    DebugFields();
+  void SpawnFields() {
+    GameObject[] oldFields = GameObject.FindGameObjectsWithTag("Field");
+    for (int i = 0; i < oldFields.Length; i++) DestroyImmediate(oldFields[i]);
+
+    for (int i = 0; i < playersCount; i++) {
+      float angle = i * (360f / playersCount);
+      Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
+      Color color = racketColors[i];
+      color.a = 32 / 255f;
+      SpriteRenderer field = GameObject.Instantiate(fields[playersCount-2], Vector3.zero, rot).GetComponent<SpriteRenderer>();
+      field.color = color;
+    }
   }
 
   void Update() {
+    if (refresh) {
+      refresh = false;
+      SpawnFields();
+    }
     /*for (int i = 0; i < positions.Count; i++) {
       Vector3 up = rotations[i] * Vector3.up;
       Debug.DrawLine(positions[i] - up * (maxPosition+1.25f), positions[i] + up * (maxPosition+1.25f), Color.red);

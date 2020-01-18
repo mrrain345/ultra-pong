@@ -11,9 +11,9 @@ public class Client : MonoBehaviour {
   public string ip = "127.0.0.1";
   public ushort port = 9000;
 
+  [SerializeField] Menu menu;
   [SerializeField] List<PacketType> disableLogger = new List<PacketType>();
-  
-  Menu menu;
+
   GameController gameController;
   float time;
 
@@ -33,9 +33,6 @@ public class Client : MonoBehaviour {
 
     NetworkEndPoint endpoint = NetworkEndPoint.Parse(ip, port);
     connection = driver.Connect(endpoint);
-
-    menu = FindObjectOfType<Menu>();
-    DontDestroyOnLoad(gameObject);
   }
 
   void OnConnected() {
@@ -48,17 +45,18 @@ public class Client : MonoBehaviour {
   } 
 
   public void StartGame(GameInfo game, int playerID) {
-    menu = null;
+    menu.gameObject.SetActive(false);
     activeGame = game;
     this.playerID = playerID;
-    SceneManager.LoadScene(1);
+    SceneManager.LoadScene(1, LoadSceneMode.Additive);
   }
 
   public void StopGame() {
     activeGame = null;
     gameController = null;
-    SceneManager.LoadScene(0);
-    menu = FindObjectOfType<Menu>();
+    SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
+    SceneManager.UnloadSceneAsync(1);
+    menu.gameObject.SetActive(true);
     menu.RefreshGameList();
   }
 
@@ -136,7 +134,7 @@ public class Client : MonoBehaviour {
       case PacketType.BallMoveEVENT:
         if (!isGame) break;
         var ballMoveEvent = new NetPackets.BallMoveEVENT().Receive(ref stream, ref context);
-        gameController.OnBallMove(ballMoveEvent.position, ballMoveEvent.velocity);
+        gameController.OnBallMove(ballMoveEvent.position, ballMoveEvent.velocity, ballMoveEvent.bounceMode);
         break;
 
       case PacketType.PlayerFailEVENT:
@@ -148,8 +146,13 @@ public class Client : MonoBehaviour {
       case PacketType.GameDestroyEVENT:
         if (!isGame) break;
         var gameDestroyEvent = new NetPackets.GameDestroyEVENT().Receive(ref stream, ref context);
-        if (gameDestroyEvent.id != activeGame.id) break;
-        gameController.OnGameDestroy();
+        if (gameDestroyEvent.id == activeGame.id) gameController.OnGameDestroy();
+        break;
+
+      case PacketType.GameFinishEVENT:
+        if (!isGame) break;
+        var gameFinishEvent = new NetPackets.GameFinishEVENT().Receive(ref stream, ref context);
+        if (gameFinishEvent.id == activeGame.id) gameController.OnGameFinish();
         break;
     }
   }

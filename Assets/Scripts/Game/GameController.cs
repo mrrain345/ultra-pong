@@ -7,9 +7,8 @@ public class GameController : MonoBehaviour {
 
   [Header("General")]
   [SerializeField] GameObject racketObj;
+  [SerializeField] Score score;
   [SerializeField] Ball ball;
-  [SerializeField] Transform background;
-  [SerializeField] new Camera camera;
   [SerializeField] Vector2 gravity;
   [SerializeField] [Range(0, 255)] int fieldAlpha = 32;
 
@@ -20,9 +19,7 @@ public class GameController : MonoBehaviour {
   [SerializeField] Vector2 battleSettings;
   [SerializeField] Color[] racketColors;
   [SerializeField] GameObject[] fields;
-
-  string[] testColors = new string[] { "CYAN", "RED", "GREEN", "YELLOW", "MAGENTA", "BLUE" };
-
+  [SerializeField] int[] scoreSettings;
 
   [HideInInspector] public Client client;
   [HideInInspector] public Racket lastTouched;
@@ -36,6 +33,8 @@ public class GameController : MonoBehaviour {
   public float cameraSize => (game.mode == GameInfo.Mode.BattleRoyal) ? battleSettings.x : settings[game.playerCount-2].x;
   public Dictionary<int, PlayerInfo> players;
 
+  Transform background;
+
   private void Start() {
     client = FindObjectOfType<Client>();
     if (client == null) {
@@ -43,12 +42,17 @@ public class GameController : MonoBehaviour {
       return;
     }
 
+    background = GameObject.FindGameObjectWithTag("Background").transform;
+
     client.SetGameController(this);
+    SceneManager.SetActiveScene(SceneManager.GetSceneAt(1));
     playersAlive = new List<int>(game.playerIDs);
+
     SpawnRackets();
     if (game.mode == GameInfo.Mode.BattleRoyal) SpawnFields();
     else maps[game.playerCount-2].SetActive(true);
     lastTouched = players[game.owner].racket;
+    score.UpdateScore();
   }
 
   public Color GetRacketColor(int racketID) {
@@ -58,20 +62,20 @@ public class GameController : MonoBehaviour {
   void SpawnRackets() {
     players = new Dictionary<int, PlayerInfo>(game.playerCount);
     background.localScale = new Vector3(cameraSize, cameraSize, 1);
-    camera.orthographicSize = cameraSize;
+    Camera.main.orthographicSize = cameraSize;
 
     for (int i = 0; i < game.playerCount; i++) {
-      float angle = i * (360 / game.playerCount);
+      float angle = i * (360f / game.playerCount);
       Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
       Vector3 pos = rot * Vector3.left * racketRadius;
 
-      Racket racket = GameObject.Instantiate(racketObj, pos, rot).GetComponent<Racket>();
+      Racket racket = Instantiate(racketObj, pos, rot).GetComponent<Racket>();
       int playerID = game.playerIDs[i];
       players[playerID] = new PlayerInfo(playerID, racket);
       racket.Setup(this, i, playerID);
 
       if (playerID == this.playerID) {
-        camera.transform.rotation = rot;
+        Camera.main.transform.rotation = rot;
         Physics2D.gravity = rot * gravity;
       }
     }
@@ -82,11 +86,11 @@ public class GameController : MonoBehaviour {
     for (int i = 0; i < oldFields.Length; i++) Destroy(oldFields[i]);
 
     for (int i = 0; i < playersAlive.Count; i++) {
-      float angle = i * (360 / playersAlive.Count);
+      float angle = i * (360f / playersAlive.Count);
       Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
       Color color = GetRacketColor(players[playersAlive[i]].racket.racketID);
-      color.a = fieldAlpha;
-      SpriteRenderer field = GameObject.Instantiate(fields[playersAlive.Count-2], Vector3.zero, rot).GetComponent<SpriteRenderer>();
+      color.a = fieldAlpha / 255f;
+      SpriteRenderer field = Instantiate(fields[playersAlive.Count-2], Vector3.zero, rot).GetComponent<SpriteRenderer>();
       field.color = color;
     }
   }
@@ -95,16 +99,20 @@ public class GameController : MonoBehaviour {
     players[playerID].racket.OnMove(position);
   }
 
-  public void OnBallMove(Vector2 position, Vector2 velocity) {
-    ball.SetPosition(position, velocity);
+  public void OnBallMove(Vector2 position, Vector2 velocity, int bounceMode) {
+    ball.SetPosition(position, velocity, bounceMode);
   }
 
   public void OnPlayerFail(int playerID, int lastTouched) {
+    bool finish = false;
+
     if (game.mode != GameInfo.Mode.BattleRoyal) {
       foreach (PlayerInfo player in players.Values) {
-        if (playerID == player.id) continue;
-        player.score++;
+        if (playerID != player.id) player.score++;
+        if (player.score >= scoreSettings[(int) game.mode]) finish = true;
       }
+      score.UpdateScore();
+      if (finish) GameFinish();
     }
     else {
       playersAlive.Remove(playerID);
@@ -113,6 +121,7 @@ public class GameController : MonoBehaviour {
         players[playerID].racket.gameObject.SetActive(false);
       } else {
         players[playersAlive[0]].score++;
+        if (players[playersAlive[0]].score >= scoreSettings[(int) game.mode]) finish = true;
         playersAlive.Clear();
         playersAlive.AddRange(game.playerIDs);
 
@@ -121,10 +130,15 @@ public class GameController : MonoBehaviour {
           player.racket.OnMove(0);
           player.racket.startPosition = player.racket.transform.position;
         }
+
+        score.UpdateScore();
       }
+
       SpawnFields();
       SetBattleCamera();
+      if (finish) GameFinish();
     }
+
     this.lastTouched = players[lastTouched].racket;
     ball.Explode();
   }
@@ -138,9 +152,9 @@ public class GameController : MonoBehaviour {
     if (!playersAlive.Contains(playerID)) return;
     float radius = racketRadius;
     float maxPos = radius * Mathf.PI / racket.maxPosition;
-    float startAngle = getFieldID(playerID) * (360 / playersAlive.Count);
+    float startAngle = getFieldID(playerID) * (360f / playersAlive.Count);
     Quaternion rot = Quaternion.AngleAxis(startAngle, Vector3.forward);
-    camera.transform.rotation = rot;
+    Camera.main.transform.rotation = rot;
     Physics2D.gravity = rot * gravity;
   }
 
@@ -148,21 +162,26 @@ public class GameController : MonoBehaviour {
     new NetPackets.RacketMove(position).Send(client.driver, client.connection);
   }
 
+  public void GameFinish() {
+    if (isOwner) new NetPackets.GameFinish(game.id).Send(client.driver, client.connection);
+  }
+
+  public void OnGameFinish() {
+    OnGameDestroy();
+  }
+
   public void OnGameDestroy() {
-    //client.StopGame();
-    #if UNITY_EDITOR
-      Destroy(client);
-    #else
-      Destroy(client.gameObject);
-    #endif
-    SceneManager.LoadScene(0);
+    background.localScale = new Vector3(5, 5, 1);
+    Camera.main.orthographicSize = 5;
+    Physics2D.gravity = gravity;
+    client.StopGame();
   }
 
 
   // Owner only
-  public void BallMove(Vector2 position, Vector2 velocity) {
+  public void BallMove(Vector2 position, Vector2 velocity, int bounceMode) {
     if (!isOwner) return;
-    new NetPackets.BallMove(position, velocity).Send(client.driver, client.connection);
+    new NetPackets.BallMove(position, velocity, bounceMode).Send(client.driver, client.connection);
   }
 
   // Owner only
@@ -174,18 +193,5 @@ public class GameController : MonoBehaviour {
         return;
       }
     }
-  }
-
-  private void OnGUI() {
-    GUILayout.BeginArea(new Rect(0, 35, 300, 500));
-    GUILayout.Label("GameID: " + game.id);
-    GUILayout.Label("PlayerID: " + playerID);
-    GUILayout.Label("OwnerID: " + game.owner);
-    GUILayout.Label("RacketID: " + localPlayer.racket.racketID);
-    GUILayout.Space(10);
-    foreach(PlayerInfo player in players.Values) {
-      GUILayout.Label("Player " + player.id + ", racket: " + player.racket.racketID + ", color: " + testColors[player.racket.racketID]);
-    }
-    GUILayout.EndArea();
   }
 }

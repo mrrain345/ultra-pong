@@ -7,23 +7,22 @@ public class GameLoader : MonoBehaviour {
   [SerializeField] Client client;
   [SerializeField] GameObject menu;
   [SerializeField] new GameObject camera;
+  [SerializeField] new GameObject audio;
   [Space]
   [SerializeField] bool editorClient = false;
   [SerializeField] bool serverBuild = false;
-  
-#if UNITY_EDITOR
-  static bool instanceExists = false;
+  [SerializeField] bool muteAudio = false;
 
+#if UNITY_EDITOR
   private void Start() {
-    if (!instanceExists) {
-      server.enabled = true;
-      instanceExists = true;
-    }
+    server.enabled = true;
 
     if (editorClient) {
       client.enabled = true;
       menu.SetActive(true);
       camera.SetActive(true);
+      audio.SetActive(true);
+      if (muteAudio) audio.GetComponent<AudioListener>().enabled = false;
     }
   }
 #else
@@ -34,6 +33,8 @@ public class GameLoader : MonoBehaviour {
       client.enabled = true;
       menu.SetActive(true);
       camera.SetActive(true);
+      audio.SetActive(true);
+      if (muteAudio) audio.GetComponent<AudioListener>().enabled = false;
     }
   }
 #endif

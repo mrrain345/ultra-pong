@@ -80,6 +80,11 @@ public class Server : MonoBehaviour {
         var playerFail = new NetPackets.PlayerFail().Receive(ref stream, ref context);
         PlayerFail(player, playerFail);
         break;
+      
+      case PacketType.GameFinish:
+        gameID = new NetPackets.GameFinish().Receive(ref stream, ref context).id;
+        GameFinish(player, gameID);
+        break;
     }
   }
 
@@ -168,10 +173,9 @@ public class Server : MonoBehaviour {
 
   void BallMove(Player player, NetPackets.BallMove ballMove) {
     GameInfo game = activeGames.Find(g => g.ContainsPlayer(player.id));
-    if (game == null) return;
-    if (game.owner != player.id) return;
+    if (game == null || game.owner != player.id) return;
 
-    var ballMoveEvent = new NetPackets.BallMoveEVENT(ballMove.position, ballMove.velocity);
+    var ballMoveEvent = new NetPackets.BallMoveEVENT(ballMove.position, ballMove.velocity, ballMove.bounceMode);
     foreach (int playerID in game.playerIDs) {
       if (playerID == player.id) continue;
       ballMoveEvent.Send(driver, players[playerID].connection);
@@ -180,13 +184,24 @@ public class Server : MonoBehaviour {
 
   void PlayerFail(Player player, NetPackets.PlayerFail playerFail) {
     GameInfo game = activeGames.Find(g => g.ContainsPlayer(player.id));
-    if (game == null) return;
-    if (game.owner != player.id) return;
+    if (game == null || game.owner != player.id) return;
 
     var playerFailEvent = new NetPackets.PlayerFailEVENT(playerFail.failed, playerFail.lastTouched);
     foreach (int id in game.playerIDs) {
       playerFailEvent.Send(driver, players[id].connection);
     }
+  }
+
+  void GameFinish(Player player, int gameID) {
+    GameInfo game = activeGames.Find(g => g.id == gameID);
+    if (game == null || game.owner != player.id) return;
+    
+    var gameFinishEvent = new NetPackets.GameFinishEVENT(gameID);
+    foreach (int id in game.playerIDs) {
+      gameFinishEvent.Send(driver, players[id].connection);
+    }
+
+    activeGames.Remove(game);
   }
 
 

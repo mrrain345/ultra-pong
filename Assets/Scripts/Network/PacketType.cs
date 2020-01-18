@@ -14,13 +14,14 @@ public enum PacketType : int {
   LobbyChangedEVENT,//
   GameList,         //
   GameListACK,      // int length, [int id, int owner, int mode, int playerCount, int acceptedPlayers, int nameLength, byte[] name]
-  GameFinish,
+  GameFinish,       // int id
   RacketMove,       // float position
   RacketMoveEVENT,  // int playerID, float position
-  BallMove,         // float position.x, float position.y, float velocity.x, float velocity.y
-  BallMoveEVENT,    // float position.x, float position.y, float velocity.x, float velocity.y
+  BallMove,         // float position.x, float position.y, float velocity.x, float velocity.y, int bounceMode (0 - none, 1 - racket, 2 - wall)
+  BallMoveEVENT,    // float position.x, float position.y, float velocity.x, float velocity.y, int bounceMode (0 - none, 1 - racket, 2 - wall)
   PlayerFail,       // int id
   PlayerFailEVENT,  // int id
+  GameFinishEVENT,  // int id
   Ping,             //
   PingACK,          //
 }
