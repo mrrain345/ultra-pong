@@ -16,6 +16,7 @@ public class Client : MonoBehaviour {
 
   GameController gameController;
   float time;
+  float lastPing = 0f;
 
   public bool IsConnected { get; private set; }
   public GameInfo activeGame { get; private set; }
@@ -27,7 +28,15 @@ public class Client : MonoBehaviour {
   }
 
   void Connect() {
-    if (SceneManager.GetActiveScene().buildIndex != 0) SceneManager.LoadScene(0);
+    if (SceneManager.GetActiveScene().buildIndex == 1) {
+      SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(0));
+      SceneManager.UnloadSceneAsync(1);
+      menu.gameObject.SetActive(true);
+    }
+
+    time = 0f;
+    lastPing = 0f;
+
     driver = new UdpNetworkDriver(new INetworkParameter[0]);
     connection = default(NetworkConnection);
 
@@ -37,6 +46,7 @@ public class Client : MonoBehaviour {
 
   void OnConnected() {
     Debug.Log("[CLIENT] CONNECTED");
+    menu.OnConnect();
     menu.RefreshGameList();
   }
 
@@ -54,18 +64,31 @@ public class Client : MonoBehaviour {
   public void StopGame() {
     activeGame = null;
     gameController = null;
-    SceneManager.SetActiveScene(SceneManager.GetSceneAt(0));
+    SceneManager.SetActiveScene(SceneManager.GetSceneByBuildIndex(0));
     SceneManager.UnloadSceneAsync(1);
     menu.gameObject.SetActive(true);
     menu.RefreshGameList();
   }
 
   private void FixedUpdate() {
+    lastPing += Time.fixedDeltaTime;
+    if (lastPing > 3.1f) menu.OnDisconnect();
+
     if (!IsConnected) return;
     time += Time.fixedDeltaTime;
-    if (time > 2f) {
+
+    if (time > 1f) {
       time = 0;
       new NetPackets.Ping().Send(driver, connection);
+    }
+
+    if (lastPing > 3.1f) {
+      Debug.Log("[CLIENT] RECONNECT");
+      menu.OnDisconnect();
+      connection.Disconnect(driver);
+      driver.Dispose();
+      IsConnected = false;
+      Connect();
     }
   }
 
@@ -76,6 +99,10 @@ public class Client : MonoBehaviour {
     if (!disableLogger.Contains(type)) Debug.LogFormat("[CLIENT]: {0}", type);
 
     switch(type) {
+      case PacketType.PingACK:
+        lastPing = 0f;
+        break;
+
       // MENU
       case PacketType.LobbyChangedEVENT:
         if (menu == null) break;

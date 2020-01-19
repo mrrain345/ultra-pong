@@ -97,6 +97,7 @@ MonoBehaviour:
   borderSprite: {fileID: 8165981856237370052}
   racketSprite: {fileID: 8165981856133713964}
   speed: 7
+  battleSpeed: 1.8
   maxPosition: 3.25
   racketID: 0
   playerID: 0

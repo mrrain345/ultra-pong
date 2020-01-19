@@ -9,12 +9,12 @@ using System.Text;
 public class Menu : MonoBehaviour {
 
   [Header("General")]
-  [SerializeField] bool DEBUG = false;
   [SerializeField] Client client;
   
   [Header("Canvases")]
   [SerializeField] GameObject mainCanvas;
   [SerializeField] GameObject LobbyCanvas;
+  [SerializeField] GameObject disconnectError;
 
   [Header("Left Panel")]
   [SerializeField] GameObject playersObj;
@@ -57,7 +57,7 @@ public class Menu : MonoBehaviour {
 
   private void FixedUpdate() {
     time += Time.fixedDeltaTime;
-    if (time > 3f) {
+    if (time > 5f) {
       time = 0;
       RefreshGameList();
     }
@@ -82,6 +82,7 @@ public class Menu : MonoBehaviour {
   }
 
   public void OnStart() {
+    if (!client.IsConnected) return;
     int players = (mode > 0) ? this.players : 2;
     new NetPackets.GameCreate((GameInfo.Mode)mode, players, serverName).Send(client.driver, client.connection);
     OnServerName("");
@@ -89,10 +90,11 @@ public class Menu : MonoBehaviour {
   }
 
   public void RefreshGameList() {
-    new NetPackets.GameList().Send(client.driver, client.connection);
+    if (client.IsConnected) new NetPackets.GameList().Send(client.driver, client.connection);
   }
 
   public void SelectGame(GameInfo game) {
+    if (!client.IsConnected) return;
     selectedGame = game;
     isYourGame = false;
     isLobby = true;
@@ -103,16 +105,31 @@ public class Menu : MonoBehaviour {
   }
 
   public void OnLobbyCancel() {
-    if (!DEBUG) new NetPackets.GameCancel(selectedGame.id).Send(client.driver, client.connection);
+    if (client.IsConnected) new NetPackets.GameCancel(selectedGame.id).Send(client.driver, client.connection);
     isLobby = false;
     isYourGame = false;
     selectedGame = null;
   }
 
+  public void OnDisconnect() {
+    isLobby = false;
+    isYourGame = false;
+    selectedGame = null;
+    disconnectError.SetActive(true);
+    RenderGameList(new List<GameInfo>(0));
+  }
+
+  public void OnConnect() {
+    disconnectError.SetActive(false);
+  }
+
 
 
   public void GameListACK(NetPackets.GameListACK gameListACK) {
-    List<GameInfo> gameLobby = gameListACK.gameLobby;
+    RenderGameList(gameListACK.gameLobby);
+  }
+
+  void RenderGameList(List<GameInfo> gameLobby) {
     foreach (RectTransform child in lobby) Destroy(child.gameObject);
     float height = Screen.height * entryRatio;
     lobby.sizeDelta = new Vector2(0, height * gameLobby.Count);
@@ -157,5 +174,6 @@ public class Menu : MonoBehaviour {
   public void GameStartEVENT(NetPackets.GameStartEVENT game) {
     isLobby = false;
     client.StartGame(game.GetGame(), game.playerID);
+    RenderGameList(new List<GameInfo>(0));
   }
 }

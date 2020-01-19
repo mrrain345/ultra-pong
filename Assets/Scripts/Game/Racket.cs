@@ -38,10 +38,13 @@ public class Racket : MonoBehaviour {
 
   public void Move(float position) {
     if (isLocalPlayer) {
-      float maxPos = 1;
-      if (gameController.isBattleRoyal) maxPos = gameController.racketRadius * Mathf.PI / maxPosition;
+      float velocity = position * (speed / maxPosition);
 
-      float velocity = position * (speed / maxPosition) / maxPos * battleSpeed;
+      if (gameController.isBattleRoyal) {
+        float maxPos = gameController.racketRadius * Mathf.PI / maxPosition;
+        velocity = velocity / maxPos * battleSpeed;
+      }
+
       float pos = velocity * Time.fixedDeltaTime;
       if (Mathf.Approximately(pos, 0f)) return;
 

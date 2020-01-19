@@ -42,6 +42,7 @@ public class Server : MonoBehaviour {
 
     switch (type) {
       case PacketType.Ping:
+        player.lastPing = 0f;
         new NetPackets.PingACK().Send(driver, player.connection);
         break;
 
@@ -205,6 +206,7 @@ public class Server : MonoBehaviour {
 
 
   void PlayerDisconnect(Player player) {
+    Debug.LogFormat("[SERVER] DISCONNECTED id: {0}", player.id);
     for (int i = 0; i < gameLobby.Count; i++) {
       if (gameLobby[i].ContainsPlayer(player.id)) {
         if (LobbyCancel(player, gameLobby[i].id)) {
@@ -262,14 +264,19 @@ public class Server : MonoBehaviour {
 
     foreach (Player player in players.Values) {
       if (!player.connection.IsCreated) continue;
+      player.lastPing += Time.deltaTime;
       NetworkEvent.Type cmd;
       while ((cmd = driver.PopEventForConnection(player.connection, out stream)) != NetworkEvent.Type.Empty) {
         if (cmd == NetworkEvent.Type.Data) OnDataReceived(player, ref stream);
         else if (cmd == NetworkEvent.Type.Disconnect) {
-          Debug.LogFormat("[SERVER] DISCONNECTED id: {0}", player.id);
           PlayerDisconnect(player);
           disconnected.Add(player.id);
         }
+      }
+      if (player.lastPing > 3.1f) {
+        PlayerDisconnect(player);
+        player.connection.Disconnect(driver);
+        disconnected.Add(player.id);
       }
     }
 
