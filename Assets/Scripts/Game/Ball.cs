@@ -62,7 +62,7 @@ public class Ball : MonoBehaviour {
       game.BallMove(transform.position, rigidbody.velocity, 0);
     }
 
-    if (game.game.mode == GameInfo.Mode.BattleRoyal && active) {
+    if (game.isBattleRoyal && active) {
       float radius = game.racketRadius + 1.5f;
       if (transform.position.sqrMagnitude > radius*radius) {
         float angle = Vector2.SignedAngle(Vector2.right, transform.position.normalized) + 180f;

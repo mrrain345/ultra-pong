@@ -5,6 +5,7 @@ public class Racket : MonoBehaviour {
   [SerializeField] SpriteRenderer borderSprite;
   [SerializeField] SpriteRenderer racketSprite;
   [SerializeField] float speed = 7;
+  [SerializeField] float battleSpeed = 2;
   public float maxPosition = 3.25f;
 
   [HideInInspector] public int racketID;
@@ -37,7 +38,10 @@ public class Racket : MonoBehaviour {
 
   public void Move(float position) {
     if (isLocalPlayer) {
-      float velocity = position * (speed / maxPosition);
+      float maxPos = 1;
+      if (gameController.isBattleRoyal) maxPos = gameController.racketRadius * Mathf.PI / maxPosition;
+
+      float velocity = position * (speed / maxPosition) / maxPos * battleSpeed;
       float pos = velocity * Time.fixedDeltaTime;
       if (Mathf.Approximately(pos, 0f)) return;
 
@@ -47,7 +51,8 @@ public class Racket : MonoBehaviour {
   }
 
   public void OnMove(float position, float velocity) {
-    this.position = Mathf.Clamp(position, -1, 1);
+    if (gameController.isBattleRoyal) this.position = Mathf.Repeat(position+1, 2) - 1;
+    else this.position = Mathf.Clamp(position, -1, 1);
     this.velocity = velocity;
     this.time = 0f;
     UpdatePosition();
@@ -55,13 +60,12 @@ public class Racket : MonoBehaviour {
 
   public void UpdatePosition() {
     float position = Mathf.Clamp(this.position + this.velocity * this.time, -1, 1);
-    if (gameController.game.mode != GameInfo.Mode.BattleRoyal) {
+    if (!gameController.isBattleRoyal) {
       transform.position = startPosition + transform.up * (position * maxPosition);
       return;
     }
 
     float radius = gameController.racketRadius;
-    //float maxPos = radius * Mathf.PI / maxPosition;
     float startAngle = gameController.getFieldID(playerID) * (360f / gameController.playersAlive.Count);
     float angle = Remap(position, -1, 1, -180, 180);
     Quaternion rot = Quaternion.AngleAxis(startAngle - angle, Vector3.forward);

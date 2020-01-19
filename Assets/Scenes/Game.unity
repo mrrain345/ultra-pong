@@ -1479,7 +1479,9 @@ MonoBehaviour:
   score: {fileID: 1684767668}
   ball: {fileID: 1261810549}
   gravity: {x: 0, y: -9.81}
-  fieldAlpha: 32
+  fieldAlpha: 0.3
+  deadFields: 0.25
+  deadAlpha: 0.8
   maps:
   - {fileID: 993168362}
   - {fileID: 2015529807}
@@ -1506,7 +1508,7 @@ MonoBehaviour:
   - {fileID: 4481309001934950575, guid: 25b1b1ba5d5d12d8888f5f321e858a48, type: 3}
   - {fileID: 7543995615328836398, guid: 55fee1b17b8cf4c78b1188c96aa4ea9a, type: 3}
   - {fileID: 6834692105337543580, guid: f2b6f14f2bdfdb7df8aa00dab3111bc5, type: 3}
-  scoreSettings: 0a0000000f0000000a000000
+  scoreSettings: 0a0000000f00000005000000
   client: {fileID: 0}
   lastTouched: {fileID: 0}
   playersAlive: 

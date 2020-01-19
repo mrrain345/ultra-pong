@@ -19,6 +19,7 @@ public class Menu : MonoBehaviour {
   [Header("Left Panel")]
   [SerializeField] GameObject playersObj;
   [SerializeField] TMP_InputField serverText;
+  [SerializeField] Slider playersSlider;
   [SerializeField] TextMeshProUGUI playersText;
   [SerializeField] Button button;
 
@@ -65,6 +66,8 @@ public class Menu : MonoBehaviour {
   public void OnModeChanged(int mode) {
     this.mode = mode;
     playersObj.SetActive(mode > 0);
+    if (mode == 1) playersSlider.minValue = 3;
+    else if (mode == 2) playersSlider.minValue = 4;
     button.interactable = (serverName.Length >= 3);
   }
 

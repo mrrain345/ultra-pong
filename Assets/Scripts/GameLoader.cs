@@ -12,12 +12,14 @@ public class GameLoader : MonoBehaviour {
   [SerializeField] bool editorClient = false;
   [SerializeField] bool serverBuild = false;
   [SerializeField] bool muteAudio = false;
+  [SerializeField] bool localServer = false;
 
 #if UNITY_EDITOR
   private void Start() {
-    server.enabled = true;
+    if (localServer) server.enabled = true;
 
     if (editorClient) {
+      if (localServer) client.ip = "127.0.0.1";
       client.enabled = true;
       menu.SetActive(true);
       camera.SetActive(true);
@@ -30,6 +32,7 @@ public class GameLoader : MonoBehaviour {
     if (serverBuild) {
       server.enabled = true;
     } else {
+      if (localServer) client.ip = "127.0.0.1";
       client.enabled = true;
       menu.SetActive(true);
       camera.SetActive(true);

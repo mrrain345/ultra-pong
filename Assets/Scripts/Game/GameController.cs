@@ -10,7 +10,9 @@ public class GameController : MonoBehaviour {
   [SerializeField] Score score;
   [SerializeField] Ball ball;
   [SerializeField] Vector2 gravity;
-  [SerializeField] [Range(0, 255)] int fieldAlpha = 32;
+  [SerializeField] [Range(0, 1)] float fieldAlpha = 0.3f;
+  [SerializeField] [Range(0, 1)] float deadFields = 0.2f;
+  [SerializeField] [Range(0, 1)] float deadAlpha = 0.8f;
 
   [Header("Settings")]
   [SerializeField] GameObject[] maps;
@@ -29,8 +31,9 @@ public class GameController : MonoBehaviour {
   public int playerID => client.playerID;
   public PlayerInfo localPlayer => players[playerID];
   public bool isOwner => playerID == game.owner;
-  public float racketRadius => (game.mode == GameInfo.Mode.BattleRoyal) ? battleSettings.y : settings[game.playerCount-2].y;
-  public float cameraSize => (game.mode == GameInfo.Mode.BattleRoyal) ? battleSettings.x : settings[game.playerCount-2].x;
+  public bool isBattleRoyal => game.mode == GameInfo.Mode.BattleRoyal;
+  public float racketRadius => isBattleRoyal ? battleSettings.y : settings[game.playerCount-2].y;
+  public float cameraSize => isBattleRoyal ? battleSettings.x : settings[game.playerCount-2].x;
   public Dictionary<int, PlayerInfo> players;
 
   Transform background;
@@ -49,7 +52,7 @@ public class GameController : MonoBehaviour {
     playersAlive = new List<int>(game.playerIDs);
 
     SpawnRackets();
-    if (game.mode == GameInfo.Mode.BattleRoyal) SpawnFields();
+    if (isBattleRoyal) SpawnFields();
     else maps[game.playerCount-2].SetActive(true);
     lastTouched = players[game.owner].racket;
     score.UpdateScore();
@@ -89,7 +92,15 @@ public class GameController : MonoBehaviour {
       float angle = i * (360f / playersAlive.Count);
       Quaternion rot = Quaternion.AngleAxis(angle, Vector3.forward);
       Color color = GetRacketColor(players[playersAlive[i]].racket.racketID);
-      color.a = fieldAlpha / 255f;
+      
+      if (!playersAlive.Contains(playerID)) {
+        color.r *= deadFields;
+        color.g *= deadFields;
+        color.b *= deadFields;
+        color.a = deadAlpha;
+      }
+      else color.a = fieldAlpha;
+
       SpriteRenderer field = Instantiate(fields[playersAlive.Count-2], Vector3.zero, rot).GetComponent<SpriteRenderer>();
       field.color = color;
     }
@@ -106,7 +117,7 @@ public class GameController : MonoBehaviour {
   public void OnPlayerFail(int playerID, int lastTouched) {
     bool finish = false;
 
-    if (game.mode != GameInfo.Mode.BattleRoyal) {
+    if (!isBattleRoyal) {
       foreach (PlayerInfo player in players.Values) {
         if (playerID != player.id) player.score++;
         if (player.score >= scoreSettings[(int) game.mode]) finish = true;
@@ -117,7 +128,11 @@ public class GameController : MonoBehaviour {
     else {
       playersAlive.Remove(playerID);
       if (playersAlive.Count > 1) {
-        foreach (int id in playersAlive) players[id].racket.OnMove(0, 0);
+        foreach (int id in playersAlive) {
+          Racket racket = players[id].racket;
+          racket.OnMove(0, 0);
+          racket.startPosition = racket.transform.position;
+        }
         players[playerID].racket.gameObject.SetActive(false);
       } else {
         players[playersAlive[0]].score++;
@@ -154,7 +169,7 @@ public class GameController : MonoBehaviour {
     float maxPos = radius * Mathf.PI / racket.maxPosition;
     float startAngle = getFieldID(playerID) * (360f / playersAlive.Count);
     Quaternion rot = Quaternion.AngleAxis(startAngle, Vector3.forward);
-    Camera.main.transform.rotation = rot;
+    Camera.main.GetComponent<SmoothCamera>().RotateTo(rot);
     Physics2D.gravity = rot * gravity;
   }
 
@@ -187,6 +202,16 @@ public class GameController : MonoBehaviour {
   // Owner only
   public void PlayerFail(int racketID) {
     if (!isOwner) return;
+
+    if (isBattleRoyal && lastTouched.racketID == racketID) {
+      if (playersAlive.Count > 2) {
+        int playerID = lastTouched.playerID;
+        int index = playersAlive.IndexOf(playerID) + 1;
+        if (index >= playersAlive.Count) index = 0;
+        lastTouched = players[playersAlive[index]].racket;
+      }
+    }
+
     foreach (PlayerInfo player in players.Values) {
       if (player.racket.racketID == racketID) {
         new NetPackets.PlayerFail(player.id, lastTouched.playerID).Send(client.driver, client.connection);
