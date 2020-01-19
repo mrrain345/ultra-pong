@@ -38,9 +38,9 @@ public class Ball : MonoBehaviour {
     Vector3 hit = HitFactor(col.transform.up, transform.position, col.transform.position);
     Vector2 dir = (col.transform.right + hit).normalized;
     rigidbody.velocity = dir * (speed + hits * hitAcceleration);
-    hits++;
 
     if (!game.isOwner) return;
+    hits++;
     audio.PlayRacket();
     game.BallMove(transform.position, rigidbody.velocity, 1);
   }
@@ -65,6 +65,7 @@ public class Ball : MonoBehaviour {
     if (game.isBattleRoyal && active) {
       float radius = game.racketRadius + 1.5f;
       if (transform.position.sqrMagnitude > radius*radius) {
+        active = false;
         float angle = Vector2.SignedAngle(Vector2.right, transform.position.normalized) + 180f;
         int id = Mathf.RoundToInt(angle * game.playersAlive.Count / 360f);
         if (id >= game.playersAlive.Count) id -= game.playersAlive.Count;
@@ -100,7 +101,10 @@ public class Ball : MonoBehaviour {
     transform.position = position;
     rigidbody.velocity = velocity;
 
-    if (bounceMode == 1) audio.PlayRacket();
-    if (bounceMode == 2) audio.PlayWall();
+    if (bounceMode == 1) {
+      hits++;
+      audio.PlayRacket();
+    }
+    else if (bounceMode == 2) audio.PlayWall();
   }
 }

@@ -11,7 +11,6 @@ public class GameLoader : MonoBehaviour {
   [Space]
   [SerializeField] bool editorClient = false;
   [SerializeField] bool serverBuild = false;
-  [SerializeField] bool muteAudio = false;
   [SerializeField] bool localServer = false;
 
 #if UNITY_EDITOR
@@ -24,7 +23,7 @@ public class GameLoader : MonoBehaviour {
       menu.SetActive(true);
       camera.SetActive(true);
       audio.SetActive(true);
-      if (muteAudio) audio.GetComponent<AudioListener>().enabled = false;
+      audio.GetComponent<AudioListener>().enabled = false;
     }
   }
 #else
@@ -37,7 +36,7 @@ public class GameLoader : MonoBehaviour {
       menu.SetActive(true);
       camera.SetActive(true);
       audio.SetActive(true);
-      if (muteAudio) audio.GetComponent<AudioListener>().enabled = false;
+      audio.GetComponent<AudioListener>().enabled = false;
     }
   }
 #endif

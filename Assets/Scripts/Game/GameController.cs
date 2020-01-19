@@ -128,12 +128,13 @@ public class GameController : MonoBehaviour {
     else {
       playersAlive.Remove(playerID);
       if (playersAlive.Count > 1) {
+        players[playerID].racket.gameObject.SetActive(false);
+
         foreach (int id in playersAlive) {
           Racket racket = players[id].racket;
           racket.OnMove(0, 0);
           racket.startPosition = racket.transform.position;
         }
-        players[playerID].racket.gameObject.SetActive(false);
       } else {
         players[playersAlive[0]].score++;
         if (players[playersAlive[0]].score >= scoreSettings[(int) game.mode]) finish = true;
@@ -203,8 +204,11 @@ public class GameController : MonoBehaviour {
   public void PlayerFail(int racketID) {
     if (!isOwner) return;
 
-    if (isBattleRoyal && lastTouched.racketID == racketID) {
-      if (playersAlive.Count > 2) {
+    if (isBattleRoyal && playersAlive.Count > 2) {
+      if (!playersAlive.Contains(lastTouched.playerID)) {
+        lastTouched = players[playersAlive[0]].racket;
+      }
+      else if (lastTouched.racketID == racketID) {
         int playerID = lastTouched.playerID;
         int index = playersAlive.IndexOf(playerID) + 1;
         if (index >= playersAlive.Count) index = 0;
